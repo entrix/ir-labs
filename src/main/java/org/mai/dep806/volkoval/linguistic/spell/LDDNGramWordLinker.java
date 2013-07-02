@@ -26,6 +26,15 @@ public class LDDNGramWordLinker {
         this.storage = storage;
     }
 
+
+    public Set<String> getAllEquivalences(String name) {
+        if (!classes.containsKey(name)) {
+            classes.put(name, new LDDWordEquivalenceClass(name));
+        }
+
+        return classes.get(name).getAllElements();
+    }
+
     /**
      * Equivalence frequency of the word
      *

@@ -54,8 +54,8 @@ public class HiddenMarkovModel {
 
         int n = stateEmission.size();
 
-        // here we are filling the State Emission Probability matrix A
-        for (int i = 1; i < n; ++i) {
+        // here we are filling the State Emission Probability sequence
+        for (int t = 0; t < n; ++t) {
             for (int j = 1; j < n; ++j) {
                 // compute P(Yj|Yi) = P(Yi,Yj) / P(Yi)
                 double Pij = model.getProbability(Arrays.asList(
@@ -64,6 +64,7 @@ public class HiddenMarkovModel {
                                 tokens.get(j) }));
                 double Pj  = model.getProbability(Arrays.asList(new String[] { tokens.get(i) }));
 
+                linker.getAllEquivalences()
                 stateEmission[i*n + j] = Pij / Pj;
             }
         }
