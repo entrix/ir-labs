@@ -85,7 +85,7 @@ public class HeadOutNGramModel implements NGramModel {
     }
 
     @Override
-    public double getProbability(List<String> tokens) throws UnsupposedTypeException {
+    public double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
         NGram.NGramType type = NGramUtil.getTypeByLength(tokens.size());
 
         if (type == NGram.NGramType.UNI_GRAM) {
@@ -250,7 +250,7 @@ public class HeadOutNGramModel implements NGramModel {
         }
 
         @Override
-        public int getNr(List<String> tokens) throws UnsupposedTypeException {
+        public int getNr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
             NGram nGram = trainingProcessor.getNGramFactory().createNGram(tokens);
             int r       = nGram.getCount();
 
@@ -258,7 +258,7 @@ public class HeadOutNGramModel implements NGramModel {
         }
 
         @Override
-        public int getTr(List<String> tokens) throws UnsupposedTypeException {
+        public int getTr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
             NGram nGram = trainingProcessor.getNGramFactory().createNGram(tokens);
             int r       = nGram.getCount();
 
@@ -293,7 +293,7 @@ public class HeadOutNGramModel implements NGramModel {
         }
 
         @Override
-        public double getProbability(List<String> tokens) throws UnsupposedTypeException {
+        public double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
             double nr = getNr(tokens);
             double tr = getTr(tokens);
             double n  = getN();

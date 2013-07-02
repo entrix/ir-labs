@@ -1,5 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.model;
 
+import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramAnalyzer;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramStorage;
@@ -27,7 +28,7 @@ public class ModelNGramAnalyzer extends NGramAnalyzer {
     }
 
     @Override
-    public double getNGramProbability(List<String> words) throws UnsupposedTypeException {
+    public double getNGramProbability(List<String> words) throws UnsupposedTypeException, UnsupposedArgumentException {
         if (NGramUtil.isSatisfied(words, model.getNGramType())) {
             return super.getNGramProbability(words);
         }

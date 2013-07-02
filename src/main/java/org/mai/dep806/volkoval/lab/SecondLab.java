@@ -90,7 +90,7 @@ public class SecondLab extends AbstractLab {
     }
 
     @Override
-    public void flush() {
+    public void flush() throws UnsupposedArgumentException {
         new SecondLabDataHandler().flushHandler();
     }
 
@@ -135,7 +135,7 @@ public class SecondLab extends AbstractLab {
         }
 
         @Override
-        public void flushHandler() {
+        public void flushHandler() throws UnsupposedArgumentException {
             for (NGramModel model : models) {
                 model.refreshStatistics();
             }

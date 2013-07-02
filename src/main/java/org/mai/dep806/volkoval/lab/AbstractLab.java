@@ -27,7 +27,7 @@ public abstract class AbstractLab {
 
     public abstract void init();
 
-    public abstract void flush();
+    public abstract void flush() throws UnsupposedArgumentException;
 
     protected abstract class LabDataHandler implements DataHandler {
     }

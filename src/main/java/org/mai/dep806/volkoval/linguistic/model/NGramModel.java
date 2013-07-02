@@ -35,7 +35,7 @@ public interface NGramModel {
 
     public List<HeadOutNGramModel.HeadOutNGramProbabilityEstimator> getEstimators();
 
-    public double getProbability(List<String> tokens) throws UnsupposedTypeException;
+    public double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 
     public WordStorage getWordStorage();
 

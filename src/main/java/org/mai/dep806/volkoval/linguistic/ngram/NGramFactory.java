@@ -1,5 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.ngram;
 
+import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 
@@ -33,7 +34,7 @@ public class NGramFactory {
         this.storage = storage;
     }
 
-    public NGram createNGram(List<String> names) throws UnsupposedTypeException {
+    public NGram createNGram(List<String> names) throws UnsupposedTypeException, UnsupposedArgumentException {
 
         if (storage.getNGramType() != NGramUtil.getTypeByLength(names.size())) {
             throw new UnsupposedTypeException("factory storage type doesn't correspond this ngram type");
@@ -42,7 +43,7 @@ public class NGramFactory {
         return storage.getNGram(names);
     }
 
-    public NGram addNGram(List<String> names) throws UnsupposedTypeException {
+    public NGram addNGram(List<String> names) throws UnsupposedTypeException, UnsupposedArgumentException {
 
         if (storage.getNGramType() != NGramUtil.getTypeByLength(names.size())) {
             throw new UnsupposedTypeException("factory storage type doesn't correspond this ngram type");

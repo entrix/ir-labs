@@ -1,5 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.ner;
 
+import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.collocation.LikeHoodCollocationDetector;
@@ -105,7 +106,7 @@ public class LEXRetriever {
         this.delta = delta;
     }
 
-    public List<MWU> retrieveProperNames(List<String> tokens) throws UnsupposedTypeException {
+    public List<MWU> retrieveProperNames(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
         List<MWU> mwuList = new ArrayList<>();
         List<String> clearTokens;
         int first = 0;
@@ -213,7 +214,7 @@ public class LEXRetriever {
         }
     }
 
-    private double f(String s0, String s1, String s2, int order) throws UnsupposedTypeException {
+    private double f(String s0, String s1, String s2, int order) throws UnsupposedTypeException, UnsupposedArgumentException {
         double numerator   = triGramProbabilityEstimator.getProbability(
                 Arrays.asList(new String[] { s0, s1, s2}));
         double denominator = gramProbabilityEstimator.getProbability(Arrays.asList(new String[]{ s0 })) *

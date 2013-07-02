@@ -7,9 +7,7 @@ import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramStorage;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,50 +20,66 @@ public class HiddenMarkovModel {
 
     private final static int MAX_LENGTH = 100;
 
+    private final static double MIN = 0.0000000001;
+
     private NGramModel model;
 
     private LDDNGramWordLinker linker;
 
-    private List<Double[]> stateEmission;
-    private List<Double[]> symbolEmission;
+    private List<Double>[] stateEmission;
+    private List<Double>[] symbolEmission;
 
-    private List<String> tokens;
+    private List<String> original;
+    private List<String> corrected;
 
 
     public HiddenMarkovModel(List<String> tokens, NGramModel model) throws UnsupposedArgumentException {
         int n = tokens.size();
 
         if (n == 0 || n >= MAX_LENGTH) {
-            throw new UnsupposedArgumentException("numner of tokens is unacceptable");
+            throw new UnsupposedArgumentException("numner of original is unacceptable");
         }
 
-        stateEmission  = new ArrayList<>(n);
-        symbolEmission = new ArrayList<>(n);
+        stateEmission  = new List[n];
+        symbolEmission = new List[n];
         this.model     = model;
-        this.tokens    = tokens;
+        this.original = tokens;
         linker         = new LDDNGramWordLinker(model.getWordStorage());
-
-        for (int t = 0; t < n + 1; ++t) {
-            symbolEmission.add(new Double[(n + 1) * (n + 1)]);
-        }
     }
 
     public void initialize() throws UnsupposedTypeException, UnsupposedArgumentException {
 
-        int n = stateEmission.size();
+        int n = stateEmission.length;
+
+        for (int t = 0; t < n; ++t) {
+            stateEmission[t]  = new ArrayList<Double>();
+            symbolEmission[t] = new ArrayList<Double>();
+        }
 
         // here we are filling the State Emission Probability sequence
         for (int t = 0; t < n; ++t) {
-            for (int j = 1; j < n; ++j) {
                 // compute P(Yj|Yi) = P(Yi,Yj) / P(Yi)
-                double Pij = model.getProbability(Arrays.asList(
-                        new String[] {
-                                hmm.(tokens.get(i)),
-                                tokens.get(j) }));
-                double Pj  = model.getProbability(Arrays.asList(new String[] { tokens.get(i) }));
+            if (t == 0) {
+                for (String name : linker.getAllEquivalences(original.get(t))) {
 
-                linker.getAllEquivalences()
-                stateEmission[i*n + j] = Pij / Pj;
+                    double Pxt = model.getProbability(
+                            Arrays.asList(new String[]{ name }));
+
+                    stateEmission[t].add(Pxt);
+                }
+            }
+            else {
+                for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
+                    for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
+
+                        double Pxtt = model.getProbability(
+                                Arrays.asList(new String[]{ nameSecond, nameFirst }));
+                        double Pxt = model.getProbability(
+                                        Arrays.asList(new String[]{ nameFirst }));
+
+                        stateEmission[t].add(Pxtt / ((Pxt == 0) ? MIN : Pxt));
+                    }
+                }
             }
         }
 
@@ -80,18 +94,31 @@ public class HiddenMarkovModel {
 
         // here we are filling the Symbol Emission Probability matrix B
         for (int t = 0; t < n; ++t) {
-            Double[] symEmission = symbolEmission.get(t);
+            // compute P(Yj|Yi) = P(Yi,Yj) / P(Yi)
+            if (t == 0) {
+                for (String name : linker.getAllEquivalences(original.get(t))) {
 
-            for (int i = 0; i < n; ++i) {
-                for (int j = 0; j < n; ++j) {
-                    // compute P(Oi|Yi,Yj) = P(Oi,Yi,Yj) / P(Yi,Yj)
-                    double Pt  = linker.getEquivFreq(tokens.get(t));
-                    double Ptj = storage.getNGram(Arrays.asList(
-                            new String[] { tokens.get(t), tokens.get(j) })).getCount() /
-                            storage.getNGramCount();
-                    double Pij = model.getProbability(Arrays.asList(new String[] { tokens.get(i) }));
+                    double Pot = linker.getEquivFreq(original.get(t));
+                    double Poxt = model.getProbability(
+                            Arrays.asList(new String[]{ original.get(t) }));
+                    double Pxt = model.getProbability(
+                            Arrays.asList(new String[]{ name }));
 
-                    symEmission[i*n + j] = (Pt * Ptj) / Pij;
+                    symbolEmission[t].add((Pot * Poxt) / ((Pxt == 0) ? MIN : Pxt));
+                }
+            }
+            else {
+                for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
+                    for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
+
+                        double Pot = linker.getEquivFreq(original.get(t));
+                        double Poxt = model.getProbability(
+                                Arrays.asList(new String[]{ original.get(t), nameSecond }));
+                        double Pxt = model.getProbability(
+                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
+
+                        symbolEmission[t].add((Pot * Poxt) / ((Pxt == 0) ? MIN : Pxt));
+                    }
                 }
             }
         }
@@ -100,39 +127,51 @@ public class HiddenMarkovModel {
     public void computeChain() throws UnsupposedTypeException {
         // viterbi realization
 
-        int n = tokens.size();
-        int T = n;
-        double[] deltaPrev = new double[n];
-        double[] deltaNext = new double[n];
+        int T = original.size();
+        int[] deltaMax = new int[T];
 
         // step 1. initialization
-        for (int i = 0; i < n - 1; ++ i) {
-            deltaPrev[i] = model.getProbability(tokens.subList(i, i + 1));
-        }
+//        for (int i = 0; i < T; ++ i) {
+//            deltaPrev[i] = model.getProbability(original.subList(i, i + 1));
+//        }
 
         // step 2. induction
-        for (int t = 0; t < T; ++t) {
-            for (int j = 0; j < n; ++j) {
-                deltaNext[j] = getMax(deltaPrev, t - 1, j);
-            }
-            deltaPrev = deltaNext;
+        for (int t = 1; t < T; ++t) {
+                deltaMax[t] = getMax(t - 1);
         }
 
+        corrected = new ArrayList<>();
+
+        for (int t = 0, i; t < T; ++t) {
+            i = 0;
+            for (String name : linker.getAllEquivalences(original.get(t))) {
+                if (deltaMax[t] == i) {
+                    corrected.add(name);
+                }
+                i++;
+            }
+        }
     }
 
-    private double getMax(double[] deltaPrev, int t, int j) {
-        int n        = tokens.size();
+    private int getMax(int t) {
+        int n        = stateEmission[t].size();
         double[] res = new double[n];
-        double  max = 0.0;
+        double  max  = 0.0;
+        int argMax   = 0;
 
         for (int i = 0; i < n; ++i) {
-            res[i] = deltaPrev[i] * stateEmission[i*n + j] * symbolEmission.get(t)[i*n + j];
+            res[i] = stateEmission[t].get(i) * symbolEmission[t].get(i);
 
             if (max > res[i]) {
-                max = res[i];
+                max    = res[i];
+                argMax = i;
             }
         }
 
-        return max;
+        return argMax;
+    }
+
+    public List<String> correctedChain() {
+        return corrected;
     }
 }

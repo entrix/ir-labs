@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class LDDNGramWordLinker {
 
-    private Map<String, EquivalenceClass<String>> classes;
+    private Map<String, EquivalenceClass<String>> classes = new HashMap<>();
 
     private WordStorage storage;
 

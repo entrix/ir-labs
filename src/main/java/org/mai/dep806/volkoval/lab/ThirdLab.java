@@ -47,7 +47,7 @@ public class ThirdLab extends AbstractLab {
         return "Third Lab";
     }
 
-    public void setMode(InputMode mode) {
+    public void setMode(InputMode mode) throws UnsupposedArgumentException {
         this.mode = mode;
 
         if (mode == InputMode.PROPER_NAME) {
@@ -129,6 +129,9 @@ public class ThirdLab extends AbstractLab {
                         break;
                 }
             } catch (UnsupposedTypeException e) {
+                e.printStackTrace();
+                logger.error(e);
+            } catch (UnsupposedArgumentException e) {
                 e.printStackTrace();
                 logger.error(e);
             }

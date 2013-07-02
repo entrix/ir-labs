@@ -15,5 +15,5 @@ import java.util.List;
 public interface DataHandler {
     public void initHandler() throws UnsupposedArgumentException, UnsupposedTypeException;
     public void handle(List<String> tokens);
-    public void flushHandler();
+    public void flushHandler() throws UnsupposedArgumentException;
 }

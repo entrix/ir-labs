@@ -2,6 +2,7 @@ package org.mai.dep806.volkoval.linguistic.spell;
 
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
+import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 
 import java.util.List;
 
@@ -13,6 +14,10 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface SpellChecker {
+
+    public String getName();
+
+    public NGramModel getModel();
 
     public List<String> getCorrection(List<String> tokens) throws UnsupposedArgumentException, UnsupposedTypeException;
 }

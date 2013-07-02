@@ -22,12 +22,18 @@ public class SimpleSpellChecker implements SpellChecker  {
 
     private final static int MAX_LENGTH = 100;
 
-    private List<String> original;
-
-    private List<String> corrected;
-
     public SimpleSpellChecker(NGramModel model) {
         this.model = model;
+    }
+
+    @Override
+    public String getName() {
+        return "Simple Spell Checker";
+    }
+
+    @Override
+    public NGramModel getModel() {
+        return model;
     }
 
     @Override
@@ -36,14 +42,12 @@ public class SimpleSpellChecker implements SpellChecker  {
             throw new UnsupposedArgumentException("numner of tokens is unacceptable");
         }
 
-        original = tokens;
         // processing
         hmm = new HiddenMarkovModel(tokens, model);
         hmm.initialize();
         hmm.computeChain();
 
-
-        return corrected;
+        return hmm.correctedChain();
     }
 
 }

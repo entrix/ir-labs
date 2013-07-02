@@ -5,11 +5,14 @@ import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
 import org.mai.dep806.volkoval.linguistic.ngram.Word;
+import org.mai.dep806.volkoval.linguistic.spell.SimpleSpellChecker;
+import org.mai.dep806.volkoval.linguistic.spell.SpellChecker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +30,10 @@ public class FourthLab extends AbstractLab {
 
     private List<NGramModel> models = new ArrayList<>();
 
+    private List<String> queries = new ArrayList<>();
+
+    private List<SpellChecker> spellCheckers = new ArrayList<>();
+
     @Override
     public void setDataRetriever(DataRetriever dataRetriever) {
         super.setDataRetriever(dataRetriever);
@@ -40,42 +47,33 @@ public class FourthLab extends AbstractLab {
     @Override
     public void produce(int freq) throws UnsupposedArgumentException {
         if (freq < 1 || freq > 1000) {
-            throw new UnsupposedArgumentException("frquency number must bi in range from 1 to 1000");
+            throw new UnsupposedArgumentException("frequency number must bi in range from 1 to 1000");
         }
 
         try {
-            for (NGramModel model : models) {
+            for (SpellChecker spellChecker : spellCheckers) {
                 // header
+                System.out.println("spellChecker: " + spellChecker.getName());
+                System.out.println("model: " + spellChecker.getModel());
                 System.out.println("-------------------------------------------------------------------------------------" +
                         "------------------------------------------------------------------------------------------------");
-                System.out.println("model: " + model.getName());
-                for (int r = 1; r < freq; ++r) {
 
-                    // value
-                    System.out.printf("r = %2d: f = %-7s ", r, String.format("%5.2f", model.f(r)));
-                    model.getProbability(Arrays.asList(new String[]{"которой", "каждый"}), "воин");
-//                System.out.printf("| %5s ", model.getNr(r));
-//                System.out.printf("| %5s ", model.getTr(r));
-                    System.out.println();
-                }
-                NGramProbabilityEstimator estimator = model.getEstimators().get(1);
-                for (NGram nGram : estimator.getValidationStorage().getAllNGrams()) {
-                    List<Word> words = nGram.getWords();
-                    List<String> prev = new ArrayList<>();
-                    String next = words.get(2).getName();
-
-                    prev.add(words.get(0).getName());
-                    prev.add(words.get(1).getName());
+                for (String query : queries) {
                     System.out.println("-------------------------------------------------------------------------------------" +
                             "------------------------------------------------------------------------------------------------");
-                    System.out.printf(" %15s %15s | %15s ", prev.get(0), prev.get(1), next);
-                    System.out.printf("| %5s \n", model.getProbability(prev, next));
-                    for (NGram synNGram : nGram.getSynonyms()) {
-                        System.out.printf(" %15s %15s | %15s ",
-                                synNGram.getWords().get(0).getName(),
-                                synNGram.getWords().get(1).getName(),
-                                synNGram.getWords().get(2).getName());
-                        System.out.printf("| %5s \n", (double) synNGram.getCount() / nGram.getCount());
+                    System.out.println("query: " + query);
+                    System.out.print("correction: ");
+
+                    for (List<String> sentence : LinguaUtil.toSentences(query.toCharArray())) {
+                        int i = 0;
+                        for (String elem : spellChecker.getCorrection(sentence)) {
+                            if (i == 0) {
+                                elem = (String.valueOf(elem.toCharArray()[0]).toUpperCase()) +
+                                        elem.substring(1);
+                                i++;
+                            }
+                            System.out.print(elem + " ");
+                        }
                     }
                 }
             }
@@ -91,7 +89,7 @@ public class FourthLab extends AbstractLab {
     }
 
     @Override
-    public void flush() {
+    public void flush() throws UnsupposedArgumentException {
         new SecondLabDataHandler().flushHandler();
     }
 
@@ -113,8 +111,24 @@ public class FourthLab extends AbstractLab {
         }
     }
 
+    public void setSpellCheckers(List<String> spellCheckers) {
+        for (String spellChecker : spellCheckers) {
+            switch (spellChecker) {
+                case "simple":
+                    for (NGramModel model : models) {
+                        this.spellCheckers.add(new SimpleSpellChecker(model));
+                    }
+                    break;
+            }
+        }
+    }
+
     public List<NGramModel> getModels() {
         return models;
+    }
+
+    public void setQueries(List<String> queries) {
+        this.queries.addAll(queries);
     }
 
     protected class SecondLabDataHandler extends AbstractLab.LabDataHandler {
@@ -136,7 +150,7 @@ public class FourthLab extends AbstractLab {
         }
 
         @Override
-        public void flushHandler() {
+        public void flushHandler() throws UnsupposedArgumentException {
             for (NGramModel model : models) {
                 model.refreshStatistics();
             }

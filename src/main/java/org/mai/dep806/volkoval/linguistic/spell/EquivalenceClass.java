@@ -1,9 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.spell;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,7 +24,7 @@ public abstract class EquivalenceClass<T> {
     }
 
     public Set<T> getAllElements() {
-        return new HashSet(elements);
+        return new TreeSet(elements);
     }
 
     public boolean isEquivalent(T elem) {

@@ -7,10 +7,7 @@ import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.data.SAXDataRetriever;
 import org.mai.dep806.volkoval.data.SIngleThreadDataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
-import org.mai.dep806.volkoval.lab.AbstractLab;
-import org.mai.dep806.volkoval.lab.FirstLab;
-import org.mai.dep806.volkoval.lab.SecondLab;
-import org.mai.dep806.volkoval.lab.ThirdLab;
+import org.mai.dep806.volkoval.lab.*;
 import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramUtil;
@@ -204,6 +201,28 @@ public class Labs {
                         xmlReader.parse(convertToFileURL(filename));
                     }
                 }
+                else if (labNumber == 4) {
+                    List<String> queries = new ArrayList<>();
+
+                    List<String> estimators = new ArrayList<>();
+
+                    if (argsMap.containsKey("estimator")) {
+                        estimators = argsMap.get("estimator");
+                    }
+                    ((FourthLab) lab).setEstimators(estimators);
+
+                    if (argsMap.containsKey("query")) {
+                        queries.add(String.valueOf(argsMap.get("query")));
+                        ((FourthLab) lab).setQueries(queries);
+                    }
+                    if (argsMap.containsKey("queries")) {
+                        ((FourthLab) lab).setQueries(argsMap.get("queries"));
+                    }
+                    if (argsMap.containsKey("spell")) {
+                        ((FourthLab) lab).setSpellCheckers(argsMap.get("spell"));
+                    }
+                }
+
                 lab.flush();
                 lab.produce(top);
             } catch (IOException e) {

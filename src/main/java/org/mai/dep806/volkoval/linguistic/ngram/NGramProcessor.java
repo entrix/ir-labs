@@ -1,6 +1,7 @@
 package org.mai.dep806.volkoval.linguistic.ngram;
 
 import org.apache.logging.log4j.Logger;
+import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
@@ -131,7 +132,10 @@ public class NGramProcessor {
             } catch (UnsupposedTypeException e) {
                 logger.error("NGrammProcessor has error underlying nGramType", e);
                 throw new UnsupposedTypeException("NGrammProcessor doesn't work");
+            } catch (UnsupposedArgumentException e) {
+                    e.printStackTrace();
+                    logger.error(e);
+                }
             }
-        }
     }
 }

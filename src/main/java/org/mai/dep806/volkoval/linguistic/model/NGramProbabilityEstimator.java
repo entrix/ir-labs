@@ -19,9 +19,9 @@ public interface NGramProbabilityEstimator {
 
     void computeStatistics() throws UnsupposedArgumentException;
 
-    int getNr(List<String> tokens) throws UnsupposedTypeException;
+    int getNr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 
-    int getTr(List<String> tokens) throws UnsupposedTypeException;
+    int getTr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 
     int getNr(int r);
 
@@ -33,7 +33,7 @@ public interface NGramProbabilityEstimator {
 
     void addToValidation(List<String> tokens) throws UnsupposedTypeException;
 
-    double getProbability(List<String> tokens) throws UnsupposedTypeException;
+    double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 
     NGramStorage getTrainStorage();
 

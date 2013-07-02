@@ -1,5 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.ngram;
 
+import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 
 import java.util.List;
@@ -19,7 +20,7 @@ public class NGramAnalyzer {
         this.storage = storage;
     }
 
-    public double getNGramProbability(List<String> words) throws UnsupposedTypeException {
+    public double getNGramProbability(List<String> words) throws UnsupposedTypeException, UnsupposedArgumentException {
         return storage.getNGramCount(words) /
                storage.getNGramCount();
     }
