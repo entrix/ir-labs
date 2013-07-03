@@ -43,18 +43,20 @@ public class NGram {
     }
 
     protected NGram(List<Word> words) throws UnsupposedArgumentException {
-        for (Word word : words) {
-            word.addOccurence(this);
-        }
         this.words = words;
-        count = 1;
+        count = 0;
+    }
+
+
+    public NGram(List<Word> words, int count) throws UnsupposedArgumentException {
+        this.words = words;
+        this.count = count;
     }
 
     protected NGram(Word ... wordArray) throws UnsupposedTypeException, UnsupposedArgumentException {
         words = new ArrayList<>();
 
         for (Word word : wordArray) {
-            word.addOccurence(this);
             words.add(word);
         }
 

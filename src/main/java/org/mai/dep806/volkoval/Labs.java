@@ -110,9 +110,8 @@ public class Labs {
                 case 3:
                     lab = new ThirdLab();
                     break;
-
                 case 4:
-
+                    lab = new FourthLab();
                     break;
             }
 
@@ -162,10 +161,28 @@ public class Labs {
                     }
                     ((SecondLab) lab).setEstimators(estimators);
                 }
+                else if (labNumber == 4) {
+                    List<String> estimators = new ArrayList<>();
+
+                    if (argsMap.containsKey("estimator")) {
+                        estimators = argsMap.get("estimator");
+                    }
+                    ((FourthLab) lab).setEstimators(estimators);
+
+                    if (argsMap.containsKey("query")) {
+                        ((FourthLab) lab).setQueries(argsMap.get("query"));
+                    }
+                    if (argsMap.containsKey("queries")) {
+                        ((FourthLab) lab).setQueries(argsMap.get("queries"));
+                    }
+                    if (argsMap.containsKey("spell")) {
+                        ((FourthLab) lab).setSpellCheckers(argsMap.get("spell"));
+                    }
+                }
 
                 lab.init();
                 for (String filename : argsMap.get("file")) {
-                    if ((labNumber == 2 || labNumber == 3) && iter == ratio) {
+                    if ((labNumber == 2 || labNumber == 3 || labNumber == 4) && iter == ratio) {
                         if (lab instanceof SecondLab) {
                             for (NGramModel model : ((SecondLab) lab).getModels()) {
                                 if (model.getType() == NGramModel.NGramModelType.HELD_OUT) {
@@ -199,27 +216,6 @@ public class Labs {
                     for (String filename : argsMap.get("pnamefile")) {
                         logger.info("filename to proper name extraction: " + filename);
                         xmlReader.parse(convertToFileURL(filename));
-                    }
-                }
-                else if (labNumber == 4) {
-                    List<String> queries = new ArrayList<>();
-
-                    List<String> estimators = new ArrayList<>();
-
-                    if (argsMap.containsKey("estimator")) {
-                        estimators = argsMap.get("estimator");
-                    }
-                    ((FourthLab) lab).setEstimators(estimators);
-
-                    if (argsMap.containsKey("query")) {
-                        queries.add(String.valueOf(argsMap.get("query")));
-                        ((FourthLab) lab).setQueries(queries);
-                    }
-                    if (argsMap.containsKey("queries")) {
-                        ((FourthLab) lab).setQueries(argsMap.get("queries"));
-                    }
-                    if (argsMap.containsKey("spell")) {
-                        ((FourthLab) lab).setSpellCheckers(argsMap.get("spell"));
                     }
                 }
 

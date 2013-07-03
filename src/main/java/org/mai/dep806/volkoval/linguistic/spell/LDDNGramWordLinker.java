@@ -96,7 +96,7 @@ public class LDDNGramWordLinker {
 
         private String seed;
 
-        private int summarizedFrequency = 0;
+        private int summarizedFrequency = 10;
 
 
         public LDDWordEquivalenceClass(String seed) {
@@ -117,7 +117,8 @@ public class LDDNGramWordLinker {
 
             Word elem = storage.getWord(name);
 
-            return elem.getCount() / summarizedFrequency;
+            return (double) (elem.getCount() == 0 ?
+                    1 : elem.getCount()) / summarizedFrequency;
         }
 
         public String getSeed() {

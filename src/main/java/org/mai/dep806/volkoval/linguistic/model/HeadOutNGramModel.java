@@ -91,7 +91,8 @@ public class HeadOutNGramModel implements NGramModel {
         if (type == NGram.NGramType.UNI_GRAM) {
             WordStorage storage = nGramProbabilityEstimators.get(0).getWordStorage();
 
-            return storage.getWordCount(tokens.get(0)) / storage.getWordCount();
+            return (double) (storage.getWordCount(tokens.get(0)) == 0 ?
+                    1 : storage.getWordCount(tokens.get(0))) / storage.getWordCount();
         }
 
         for (NGramProbabilityEstimator estimator : nGramProbabilityEstimators) {
@@ -246,6 +247,8 @@ public class HeadOutNGramModel implements NGramModel {
                 }
                 trMap.put(nrEntry.getKey(), sum);
             }
+            nrMap.put(0, 10);
+            trMap.put(0, 1);
             nrNGramMap.clear();
         }
 

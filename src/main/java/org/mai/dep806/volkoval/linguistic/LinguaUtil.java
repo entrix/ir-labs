@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 /**
@@ -37,7 +38,47 @@ public class LinguaUtil {
 
     private static CommonStatistic statistic;
 
+    private static List<Character> consonants;
+
+    private static List<Character> vowels;
+
     static {
+        consonants = new ArrayList<>();
+        consonants.add('б');
+        consonants.add('в');
+        consonants.add('г');
+        consonants.add('д');
+        consonants.add('е');
+        consonants.add('ж');
+        consonants.add('з');
+        consonants.add('к');
+        consonants.add('л');
+        consonants.add('м');
+        consonants.add('й');
+        consonants.add('н');
+        consonants.add('п');
+        consonants.add('р');
+        consonants.add('с');
+        consonants.add('т');
+        consonants.add('у');
+        consonants.add('ф');
+        consonants.add('х');
+        consonants.add('ц');
+        consonants.add('ч');
+        consonants.add('ш');
+        consonants.add('щ');
+
+        vowels = new ArrayList<>();
+        vowels.add('а');
+        vowels.add('е');
+        vowels.add('и');
+        vowels.add('о');
+        vowels.add('у');
+        vowels.add('ы');
+        vowels.add('э');
+        vowels.add('ю');
+        vowels.add('я');
+
         luceneMorph = null;
         try {
             RussianAnalyzer ru_an = new RussianAnalyzer();
@@ -55,6 +96,7 @@ public class LinguaUtil {
         StringBuilder builder = new StringBuilder();
         List<String> items = new ArrayList<>();
 
+
         for (int i = 0; i < ch.length; ++i) {
 
             if (!isCyrillic(ch[i])) {
@@ -67,12 +109,13 @@ public class LinguaUtil {
                 }
             }
             if (ch[i] != '.' && ch[i] != '?' && ch[i] != '!') {
-                if (statistic != null) {
-                    statistic.setParameter("sentence.number", (int)statistic.getParameter("sentence.number") + 1);
-                }
                 builder.append(ch[i]);
             }
             else {
+                if (statistic != null) {
+                    statistic.setParameter("sentence.number", (int)statistic.getParameter("sentence.number") + 1);
+                }
+
                 String sentence = punctuationPattern.matcher(builder.toString()).replaceAll("");
 
                 sentence = sentence.replaceAll(whiteSpacePattern, " ").trim();
@@ -118,6 +161,53 @@ public class LinguaUtil {
     }
 
     public static Set<String> getLevensteinDamerauDisplacement(String seed) {
-        return null;
+        Set<String> disSet = new TreeSet<>();
+
+        disSet.add(seed);
+
+        for (int i = 0; i < seed.length(); ++i) {
+            String prev = "";
+
+            if (i >= 1) {
+                prev = seed.substring(0, i);
+            }
+
+            if (consonants.contains(seed.charAt(i))) {
+                for (Character ch : consonants) {
+                    if (seed.charAt(i) != ch) {
+                        disSet.add(prev + String.valueOf(ch) + seed.substring(i + 1, seed.length()));
+                    }
+                }
+            }
+            else if (vowels.contains(seed.charAt(i))) {
+                for (Character ch : vowels) {
+                    if (seed.charAt(i) != ch) {
+                        disSet.add(prev + String.valueOf(ch) + seed.substring(i + 1, seed.length()));
+                    }
+                }
+            }
+            // deletion
+            disSet.add(prev + seed.substring(i + 1, seed.length()));
+
+            // insertion
+            for (Character ch : consonants) {
+                disSet.add(prev + String.valueOf(ch) + seed.substring(i, seed.length()));
+            }
+            for (Character ch : vowels) {
+                disSet.add(prev + String.valueOf(ch) + seed.substring(i, seed.length()));
+            }
+
+            if (i > 0) {
+                prev = "";
+                if (i > 1) {
+                    prev = seed.substring(0, i - 1);
+                }
+                disSet.add(prev + String.valueOf(seed.charAt(i)) +
+                        String.valueOf(seed.charAt(i - 1)) + seed.substring(i + 1, seed.length()));
+            }
+
+        }
+
+        return disSet;
     }
 }

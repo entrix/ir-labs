@@ -26,8 +26,8 @@ public class HiddenMarkovModel {
 
     private LDDNGramWordLinker linker;
 
-    private List<Double>[] stateEmission;
-    private List<Double>[] symbolEmission;
+    private List<List<Double>> stateEmission;
+    private List<List<Double>> symbolEmission;
 
     private List<String> original;
     private List<String> corrected;
@@ -40,8 +40,8 @@ public class HiddenMarkovModel {
             throw new UnsupposedArgumentException("numner of original is unacceptable");
         }
 
-        stateEmission  = new List[n];
-        symbolEmission = new List[n];
+        stateEmission  = new ArrayList<>(n);
+        symbolEmission = new ArrayList<>(n);
         this.model     = model;
         this.original = tokens;
         linker         = new LDDNGramWordLinker(model.getWordStorage());
@@ -49,11 +49,13 @@ public class HiddenMarkovModel {
 
     public void initialize() throws UnsupposedTypeException, UnsupposedArgumentException {
 
-        int n = stateEmission.length;
+        int n = original.size();
+
+        int iter = 0;
 
         for (int t = 0; t < n; ++t) {
-            stateEmission[t]  = new ArrayList<Double>();
-            symbolEmission[t] = new ArrayList<Double>();
+            stateEmission.add(new ArrayList<Double>());
+            symbolEmission.add(new ArrayList<Double>());
         }
 
         // here we are filling the State Emission Probability sequence
@@ -62,22 +64,36 @@ public class HiddenMarkovModel {
             if (t == 0) {
                 for (String name : linker.getAllEquivalences(original.get(t))) {
 
+                    if (name.equals("лютая")) {
+                        System.out.println();
+                    }
                     double Pxt = model.getProbability(
                             Arrays.asList(new String[]{ name }));
 
-                    stateEmission[t].add(Pxt);
+                    stateEmission.get(t).add(Pxt);
                 }
             }
             else {
+                iter = 0;
                 for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
                     for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
+
+
+
 
                         double Pxtt = model.getProbability(
                                 Arrays.asList(new String[]{ nameSecond, nameFirst }));
                         double Pxt = model.getProbability(
                                         Arrays.asList(new String[]{ nameFirst }));
 
-                        stateEmission[t].add(Pxtt / ((Pxt == 0) ? MIN : Pxt));
+
+                        if (Pxtt / ((Pxt == 0) ? MIN : Pxt) > 1.0) {
+                            stateEmission.get(t).add(MIN);
+                        }
+                        else {
+                            stateEmission.get(t).add(Pxtt / ((Pxt == 0) ? MIN : Pxt));
+                        }
+                        iter++;
                     }
                 }
             }
@@ -92,32 +108,57 @@ public class HiddenMarkovModel {
             }
         }
 
+        double m = 0.0;
+//        int iter;
+
         // here we are filling the Symbol Emission Probability matrix B
         for (int t = 0; t < n; ++t) {
             // compute P(Yj|Yi) = P(Yi,Yj) / P(Yi)
             if (t == 0) {
                 for (String name : linker.getAllEquivalences(original.get(t))) {
+                    if (name.equals("лютая")) {
+                        System.out.println();
+                    }
 
-                    double Pot = linker.getEquivFreq(original.get(t));
-                    double Poxt = model.getProbability(
-                            Arrays.asList(new String[]{ original.get(t) }));
-                    double Pxt = model.getProbability(
+                    double Pot  = linker.getEquivFreq(original.get(t));
+                    double Poxt = linker.getEquivFreq(name);
+//                    double Poxt = model.getProbability(
+//                            Arrays.asList(new String[]{ original.get(t) }));
+                    double Pxt  = model.getProbability(
                             Arrays.asList(new String[]{ name }));
 
-                    symbolEmission[t].add((Pot * Poxt) / ((Pxt == 0) ? MIN : Pxt));
+
+//                    System.out.println("eq name: " + name);
+
+
+
+
+                    symbolEmission.get(t).add((Pot * Poxt));
                 }
             }
             else {
                 for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
+//                    iter = 0;
                     for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
 
-                        double Pot = linker.getEquivFreq(original.get(t));
-                        double Poxt = model.getProbability(
-                                Arrays.asList(new String[]{ original.get(t), nameSecond }));
-                        double Pxt = model.getProbability(
-                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
+//                        if (nameSecond.equals("неприязнь")) {
+//                             System.out.println();
+//                        }
 
-                        symbolEmission[t].add((Pot * Poxt) / ((Pxt == 0) ? MIN : Pxt));
+                        double Pot = linker.getEquivFreq(original.get(t));
+                        double Poxt = linker.getEquivFreq(nameFirst) * linker.getEquivFreq(nameSecond);
+//                        double Poxt = model.getProbability(
+//                                Arrays.asList(new String[]{ original.get(t), nameSecond }));
+//                        double Pxt = model.getProbability(
+//                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
+
+//                        System.out.println("eq names: " + nameSecond);
+                          if (m < (Pot * Poxt)) {
+                            m = (Pot * Poxt);
+//                            System.out.println("eq name: " + nameFirst + " " + nameSecond);
+                          }
+                        symbolEmission.get(t).add((Pot * Poxt));
+                        iter++;
                     }
                 }
             }
@@ -136,8 +177,8 @@ public class HiddenMarkovModel {
 //        }
 
         // step 2. induction
-        for (int t = 1; t < T; ++t) {
-                deltaMax[t] = getMax(t - 1);
+        for (int t = 0; t < T; ++t) {
+                deltaMax[t] = getMax(t);
         }
 
         corrected = new ArrayList<>();
@@ -154,20 +195,23 @@ public class HiddenMarkovModel {
     }
 
     private int getMax(int t) {
-        int n        = stateEmission[t].size();
+        int n        = stateEmission.get(t).size();
         double[] res = new double[n];
         double  max  = 0.0;
         int argMax   = 0;
 
         for (int i = 0; i < n; ++i) {
-            res[i] = stateEmission[t].get(i) * symbolEmission[t].get(i);
+            res[i] = stateEmission.get(t).get(i) * symbolEmission.get(t).get(i);
 
-            if (max > res[i]) {
+            if (max < res[i]) {
                 max    = res[i];
                 argMax = i;
             }
         }
 
+        if (t > 0) {
+            argMax %= linker.getAllEquivalences(original.get(t)).size();
+        }
         return argMax;
     }
 

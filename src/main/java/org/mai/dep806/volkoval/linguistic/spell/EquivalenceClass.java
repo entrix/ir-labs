@@ -24,7 +24,7 @@ public abstract class EquivalenceClass<T> {
     }
 
     public Set<T> getAllElements() {
-        return new TreeSet(elements);
+        return new TreeSet<T>(elements);
     }
 
     public boolean isEquivalent(T elem) {
@@ -36,7 +36,7 @@ public abstract class EquivalenceClass<T> {
             elements = new HashSet<>();
         }
         else {
-            elements.clear();;
+            elements.clear();
         }
     }
 }

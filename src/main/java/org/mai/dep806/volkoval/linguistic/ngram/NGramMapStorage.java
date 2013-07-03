@@ -70,6 +70,9 @@ public class NGramMapStorage implements NGramStorage {
 
         if (!nGramSet.containsKey(nGram.hashCode())) {
             nGramSet.put(nGram.hashCode(), nGram);
+            for (Word word : nGram.getWords()) {
+                word.addOccurence(nGram);
+            }
         }
         else {
             nGram = nGramSet.get(nGram.hashCode());
@@ -123,7 +126,7 @@ public class NGramMapStorage implements NGramStorage {
         if (!nGramSet.containsKey(nGram.hashCode())) {
             List<Word> words = nGram.getWords();
 
-            return new NGram(words);
+            return new NGram(words, 0);
         }
         return nGramSet.get(nGram.hashCode());
     }

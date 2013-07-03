@@ -37,7 +37,7 @@ public class FourthLab extends AbstractLab {
     @Override
     public void setDataRetriever(DataRetriever dataRetriever) {
         super.setDataRetriever(dataRetriever);
-        dataRetriever.addDataHandler(new SecondLabDataHandler());
+        dataRetriever.addDataHandler(new FourthLabDataHandler());
     }
     @Override
     public String getLabName() {
@@ -53,10 +53,10 @@ public class FourthLab extends AbstractLab {
         try {
             for (SpellChecker spellChecker : spellCheckers) {
                 // header
-                System.out.println("spellChecker: " + spellChecker.getName());
-                System.out.println("model: " + spellChecker.getModel());
                 System.out.println("-------------------------------------------------------------------------------------" +
                         "------------------------------------------------------------------------------------------------");
+                System.out.println("spellChecker: " + spellChecker.getName());
+                System.out.println("model: " + spellChecker.getModel());
 
                 for (String query : queries) {
                     System.out.println("-------------------------------------------------------------------------------------" +
@@ -64,7 +64,7 @@ public class FourthLab extends AbstractLab {
                     System.out.println("query: " + query);
                     System.out.print("correction: ");
 
-                    for (List<String> sentence : LinguaUtil.toSentences(query.toCharArray())) {
+                    for (List<String> sentence : LinguaUtil.toSentences((query + ".").toCharArray())) {
                         int i = 0;
                         for (String elem : spellChecker.getCorrection(sentence)) {
                             if (i == 0) {
@@ -75,6 +75,7 @@ public class FourthLab extends AbstractLab {
                             System.out.print(elem + " ");
                         }
                     }
+                    System.out.println(".");
                 }
             }
         } catch (Exception e) {
@@ -85,12 +86,12 @@ public class FourthLab extends AbstractLab {
 
     @Override
     public void init() {
-        new SecondLabDataHandler().initHandler();
+        new FourthLabDataHandler().initHandler();
     }
 
     @Override
     public void flush() throws UnsupposedArgumentException {
-        new SecondLabDataHandler().flushHandler();
+        new FourthLabDataHandler().flushHandler();
     }
 
     public void setEstimators(List<String> models) {
@@ -131,7 +132,7 @@ public class FourthLab extends AbstractLab {
         this.queries.addAll(queries);
     }
 
-    protected class SecondLabDataHandler extends AbstractLab.LabDataHandler {
+    protected class FourthLabDataHandler extends AbstractLab.LabDataHandler {
 
         @Override
         public void initHandler() {

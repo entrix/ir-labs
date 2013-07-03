@@ -19,6 +19,7 @@ public class Word {
 
     public Word(String word) {
         this.word = word;
+        count = 0;
     }
 
     public Word(String word, int freq) {
