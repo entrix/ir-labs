@@ -126,7 +126,8 @@ public class LinguaUtil {
                     }
                 }
 
-                sentences.add(items);
+                sentences.add(new ArrayList<String>(items));
+                items.clear();
                 builder = new StringBuilder();
             }
         }

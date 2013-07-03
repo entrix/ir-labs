@@ -26,6 +26,12 @@ public class HeadOutNGramModel implements NGramModel {
     // if we added any data thea we must recompute statistic
     private boolean modified = true;
 
+    public static NGram lastNfGram;
+
+    public static NGram lastsNGram;
+
+    static int itr = 0;
+
     public HeadOutNGramModel(NGram.NGramType nGramType)
             throws UnsupposedArgumentException, UnsupposedTypeException {
         this.nGramBaseType = nGramType;
@@ -88,12 +94,12 @@ public class HeadOutNGramModel implements NGramModel {
     public double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
         NGram.NGramType type = NGramUtil.getTypeByLength(tokens.size());
 
-        if (type == NGram.NGramType.UNI_GRAM) {
-            WordStorage storage = nGramProbabilityEstimators.get(0).getWordStorage();
-
-            return (double) (storage.getWordCount(tokens.get(0)) == 0 ?
-                    1 : storage.getWordCount(tokens.get(0))) / storage.getWordCount();
-        }
+//        if (type == NGram.NGramType.UNI_GRAM) {
+//            WordStorage storage = nGramProbabilityEstimators.get(0).getWordStorage();
+//
+//            return (double) (storage.getWordCount(tokens.get(0)) == 0 ?
+//                    1 : storage.getWordCount(tokens.get(0))) / storage.getWordCount();
+//        }
 
         for (NGramProbabilityEstimator estimator : nGramProbabilityEstimators) {
             if (type == estimator.getTrainStorage().getNGramType()) {
@@ -264,6 +270,15 @@ public class HeadOutNGramModel implements NGramModel {
         public int getTr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
             NGram nGram = trainingProcessor.getNGramFactory().createNGram(tokens);
             int r       = nGram.getCount();
+
+            if ((itr % 2) == 0) {
+                lastNfGram = nGram;
+                itr = 1;
+            }
+            else {
+                lastsNGram = nGram;
+                itr = 0;
+            }
 
             return trMap.get(r);
         }

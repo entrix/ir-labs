@@ -18,12 +18,12 @@ public class Word {
     private Map<NGram, Integer> links = new HashMap<>();
 
     public Word(String word) {
-        this.word = word;
+        this.word = new String(word);
         count = 0;
     }
 
     public Word(String word, int freq) {
-        this.word = word;
+        this.word  = new String(word);
         this.count = freq;
     }
 

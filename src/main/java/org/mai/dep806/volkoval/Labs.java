@@ -17,8 +17,7 @@ import org.xml.sax.XMLReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 import static java.lang.System.out;
@@ -169,12 +168,18 @@ public class Labs {
                     }
                     ((FourthLab) lab).setEstimators(estimators);
 
+                    List<String> queries = new ArrayList<>();
+
+                    if (argsMap.containsKey("queryfile")) {
+                        queries.add(readFile(argsMap.get("queryfile").get(0)));
+                    }
                     if (argsMap.containsKey("query")) {
-                        ((FourthLab) lab).setQueries(argsMap.get("query"));
+                        queries.addAll(argsMap.get("query"));
                     }
                     if (argsMap.containsKey("queries")) {
-                        ((FourthLab) lab).setQueries(argsMap.get("queries"));
+                        queries.addAll(argsMap.get("queries"));
                     }
+                    ((FourthLab) lab).setQueries(queries);
                     if (argsMap.containsKey("spell")) {
                         ((FourthLab) lab).setSpellCheckers(argsMap.get("spell"));
                     }
@@ -238,6 +243,27 @@ public class Labs {
         }
     }
 
+    public static String readFile(String fileName) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            String line;
+            StringBuilder builder = new StringBuilder();
+
+            while ((line = reader.readLine()) != null) {
+                builder.append(line + " ");
+            }
+
+            return builder.toString();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            logger.error(e);
+        } catch (IOException e) {
+            e.printStackTrace();
+            logger.error(e);
+        }
+
+        return "";
+    }
 
     private static String convertToFileURL(String filename) {
         String path = new File(filename).getAbsolutePath();

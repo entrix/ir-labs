@@ -60,8 +60,7 @@ public class WordMapStorage implements WordStorage {
             return new Word(name, 0);
         }
 
-        return (wordMap.get(name) == null) ?
-                new Word(name): wordMap.get(name);
+        return wordMap.get(name);
     }
 
     @Override

@@ -17,6 +17,7 @@ import org.mai.dep806.volkoval.linguistic.spell.SpellChecker;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -64,7 +65,12 @@ public class FourthLab extends AbstractLab {
                     System.out.println("query: " + query);
                     System.out.print("correction: ");
 
-                    for (List<String> sentence : LinguaUtil.toSentences((query + ".").toCharArray())) {
+                    // check whether string don't ends with sentence terminal symbol
+                    if (Pattern.compile(".*\\w[^\\.\\?\\!]$").matcher(query).find()) {
+                        query += ".";
+                    }
+
+                    for (List<String> sentence : LinguaUtil.toSentences((query).toCharArray())) {
                         int i = 0;
                         for (String elem : spellChecker.getCorrection(sentence)) {
                             if (i == 0) {
@@ -99,7 +105,7 @@ public class FourthLab extends AbstractLab {
             for (String model : models) {
                 switch (model) {
                     case "heldout":
-                        this.models.add(new HeadOutNGramModel(NGram.NGramType.BI_GRAM));
+                        this.models.add(new HeadOutNGramModel(NGram.NGramType.UNI_GRAM, 2));
                         break;
                 }
             }

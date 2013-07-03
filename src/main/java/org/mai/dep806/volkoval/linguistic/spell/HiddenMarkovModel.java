@@ -53,6 +53,8 @@ public class HiddenMarkovModel {
 
         int iter = 0;
 
+        double m = 0.0;
+
         for (int t = 0; t < n; ++t) {
             stateEmission.add(new ArrayList<Double>());
             symbolEmission.add(new ArrayList<Double>());
@@ -64,9 +66,6 @@ public class HiddenMarkovModel {
             if (t == 0) {
                 for (String name : linker.getAllEquivalences(original.get(t))) {
 
-                    if (name.equals("лютая")) {
-                        System.out.println();
-                    }
                     double Pxt = model.getProbability(
                             Arrays.asList(new String[]{ name }));
 
@@ -78,20 +77,24 @@ public class HiddenMarkovModel {
                 for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
                     for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
 
-
-
-
                         double Pxtt = model.getProbability(
-                                Arrays.asList(new String[]{ nameSecond, nameFirst }));
+                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
                         double Pxt = model.getProbability(
                                         Arrays.asList(new String[]{ nameFirst }));
 
-
                         if (Pxtt / ((Pxt == 0) ? MIN : Pxt) > 1.0) {
+                            System.out.printf("error: name: %15s %15s pxtt: %10f pxt: %10f\n", nameFirst, nameSecond,
+                                    Pxtt, Pxt);
                             stateEmission.get(t).add(MIN);
+                            Pxtt = model.getProbability(
+                                    Arrays.asList(new String[]{ nameFirst, nameSecond }));
                         }
                         else {
                             stateEmission.get(t).add(Pxtt / ((Pxt == 0) ? MIN : Pxt));
+                            if (m < Pxtt / ((Pxt == 0) ? MIN : Pxt)) {
+                                m = Pxtt / ((Pxt == 0) ? MIN : Pxt);
+                                System.out.println("eq name: " + nameFirst + " " + nameSecond + " m: " + m);
+                            }
                         }
                         iter++;
                     }
@@ -108,7 +111,6 @@ public class HiddenMarkovModel {
             }
         }
 
-        double m = 0.0;
 //        int iter;
 
         // here we are filling the Symbol Emission Probability matrix B

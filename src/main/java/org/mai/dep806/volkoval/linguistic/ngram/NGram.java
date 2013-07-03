@@ -31,16 +31,16 @@ public class NGram {
         count = 0;
     }
 
-    @Override
-    public int hashCode() {
-        Integer hashSum = 0;
-
-        for (Word word : words) {
-            hashSum += word.hashCode();
-        }
-
-        return hashSum + words.hashCode();
-    }
+//    @Override
+//    public int hashCode() {
+//        Integer hashSum = 0;
+//
+//        for (Word word : words) {
+//            hashSum += word.hashCode();
+//        }
+//
+//        return hashSum;
+//    }
 
     protected NGram(List<Word> words) throws UnsupposedArgumentException {
         this.words = words;
