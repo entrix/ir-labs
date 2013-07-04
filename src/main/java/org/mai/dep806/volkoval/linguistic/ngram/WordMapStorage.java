@@ -44,6 +44,8 @@ public class WordMapStorage implements WordStorage {
 
             wordMap.put(name, word);
             wordStorage.put(word, new ArrayList<Word>());
+            word.incrementCount();
+            this.incrementCount();
         }
         else {
             word = wordMap.get(name);

@@ -17,7 +17,7 @@ import java.util.List;
 public interface NGramProbabilityEstimator {
     void initialize(WordStorage storage) throws UnsupposedArgumentException, UnsupposedTypeException;
 
-    void computeStatistics() throws UnsupposedArgumentException;
+    void computeStatistics() throws UnsupposedArgumentException, UnsupposedTypeException;
 
     int getNr(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 

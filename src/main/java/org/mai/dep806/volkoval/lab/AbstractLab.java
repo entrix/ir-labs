@@ -3,6 +3,7 @@ package org.mai.dep806.volkoval.lab;
 import org.mai.dep806.volkoval.data.DataHandler;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
+import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 
 import java.util.List;
 
@@ -27,7 +28,7 @@ public abstract class AbstractLab {
 
     public abstract void init();
 
-    public abstract void flush() throws UnsupposedArgumentException;
+    public abstract void flush() throws UnsupposedArgumentException, UnsupposedTypeException;
 
     protected abstract class LabDataHandler implements DataHandler {
     }

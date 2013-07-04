@@ -15,16 +15,6 @@ import java.util.List;
  */
 public class NGramUtil {
 
-    private static boolean normalize = false;
-
-    public static boolean isNormalize() {
-        return normalize;
-    }
-
-    public static void setNormalize(boolean normalize) {
-        NGramUtil.normalize = normalize;
-    }
-
     public static List<List<String>> getBigrams(List<String> tokens) throws UnsupposedTypeException {
         return groupWords(tokens, NGram.NGramType.BI_GRAM);
     }

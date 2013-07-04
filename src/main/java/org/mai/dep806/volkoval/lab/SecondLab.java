@@ -5,7 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
-import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.*;
@@ -90,7 +91,7 @@ public class SecondLab extends AbstractLab {
     }
 
     @Override
-    public void flush() throws UnsupposedArgumentException {
+    public void flush() throws UnsupposedArgumentException, UnsupposedTypeException {
         new SecondLabDataHandler().flushHandler();
     }
 
@@ -99,7 +100,7 @@ public class SecondLab extends AbstractLab {
             for (String model : models) {
                 switch (model) {
                     case "heldout":
-                        this.models.add(new HeadOutNGramModel(NGram.NGramType.BI_GRAM));
+                        this.models.add(new HeldOutNGramModel(NGram.NGramType.BI_GRAM));
                         break;
                 }
             }
@@ -135,7 +136,7 @@ public class SecondLab extends AbstractLab {
         }
 
         @Override
-        public void flushHandler() throws UnsupposedArgumentException {
+        public void flushHandler() throws UnsupposedArgumentException, UnsupposedTypeException {
             for (NGramModel model : models) {
                 model.refreshStatistics();
             }

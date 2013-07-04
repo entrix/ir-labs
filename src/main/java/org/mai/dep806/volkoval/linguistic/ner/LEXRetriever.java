@@ -4,7 +4,7 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.collocation.LikeHoodCollocationDetector;
-import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramMapStorage;

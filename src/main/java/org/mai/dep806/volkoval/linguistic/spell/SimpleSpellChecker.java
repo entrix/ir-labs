@@ -2,9 +2,13 @@ package org.mai.dep806.volkoval.linguistic.spell;
 
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
+import org.mai.dep806.volkoval.linguistic.ngram.NGramUtil;
+import org.mai.dep806.volkoval.linguistic.ngram.Word;
 import org.mai.dep806.volkoval.linguistic.ngram.WordStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,6 +47,16 @@ public class SimpleSpellChecker implements SpellChecker  {
         }
 
         // processing
+        if (LinguaUtil.isNormalize()) {
+            List<String> normalizedTokens = new ArrayList<>();
+
+            for (String token : tokens) {
+                normalizedTokens.add(LinguaUtil.getRussianNormalForm(token));
+            }
+            tokens = normalizedTokens;
+        }
+        model.addNGrams(tokens);
+
         hmm = new HiddenMarkovModel(tokens, model);
         hmm.initialize();
         hmm.computeChain();

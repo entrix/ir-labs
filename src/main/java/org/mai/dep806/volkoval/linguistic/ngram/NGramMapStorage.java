@@ -20,7 +20,7 @@ public class NGramMapStorage implements NGramStorage {
 
     private WordStorage wordStorage;
 
-    private Map<Integer, NGram> nGramSet;
+    private Map<List<Word>, NGram> nGramSet;
 
     private NGram.NGramType nGramType;
 
@@ -37,7 +37,7 @@ public class NGramMapStorage implements NGramStorage {
         this.nGramSet = new HashMap<>();
     }
 
-    public NGramMapStorage(NGram.NGramType NGramType, WordStorage wordStorage, Map<Integer, NGram> nGramSet) {
+    public NGramMapStorage(NGram.NGramType NGramType, WordStorage wordStorage, Map<List<Word>, NGram> nGramSet) {
         this.wordStorage = wordStorage;
         this.nGramSet = nGramSet;
         this.nGramType = NGramType;
@@ -54,7 +54,7 @@ public class NGramMapStorage implements NGramStorage {
     }
 
     @Override
-    public NGram addNGram(List<String> names) throws UnsupposedArgumentException {
+    public NGram addNGram(List<String> names) throws UnsupposedArgumentException, UnsupposedTypeException {
 
         if (names == null || names.size() != NGram.getNGramTypeLength(nGramType)) {
             return null;
@@ -68,14 +68,15 @@ public class NGramMapStorage implements NGramStorage {
 
         NGram nGram = new NGram(words);
 
-        if (!nGramSet.containsKey(nGram.hashCode())) {
-            nGramSet.put(nGram.hashCode(), nGram);
+        if (!nGramSet.containsKey(nGram.getWords())) {
+            nGramSet.put(words, nGram);
             for (Word word : nGram.getWords()) {
                 word.addOccurence(nGram);
             }
+            nGram.incrementCount();
         }
         else {
-            nGram = nGramSet.get(nGram.hashCode());
+            nGram = nGramSet.get(nGram.getWords());
             nGram.incrementCount();
         }
 
@@ -90,7 +91,7 @@ public class NGramMapStorage implements NGramStorage {
         }
 
         if (!nGramSet.containsKey(nGram.hashCode())) {
-            nGramSet.put(nGram.hashCode(), nGram);
+            nGramSet.put(nGram.getWords(), nGram);
         }
         else {
             nGram = nGramSet.get(nGram.hashCode());
@@ -101,7 +102,7 @@ public class NGramMapStorage implements NGramStorage {
     }
 
     @Override
-    public NGram getNGram(List<String> names) throws UnsupposedArgumentException {
+    public NGram getNGram(List<String> names) throws UnsupposedArgumentException, UnsupposedTypeException {
         if (names == null || names.size() != NGram.getNGramTypeLength(nGramType)) {
             return null;
         }
@@ -114,21 +115,21 @@ public class NGramMapStorage implements NGramStorage {
 
         NGram nGram = new NGram(words);
 
-        if (nGramSet.containsKey(nGram.hashCode())) {
-            return nGramSet.get(nGram.hashCode());
+        if (nGramSet.containsKey(nGram.getWords())) {
+            return nGramSet.get(nGram.getWords());
         }
 
         return nGram;
     }
 
     @Override
-    public NGram getNGram(NGram nGram) throws UnsupposedArgumentException {
-        if (!nGramSet.containsKey(nGram.hashCode())) {
+    public NGram getNGram(NGram nGram) throws UnsupposedArgumentException, UnsupposedTypeException {
+        if (!nGramSet.containsKey(nGram.getWords())) {
             List<Word> words = nGram.getWords();
 
             return new NGram(words, 0);
         }
-        return nGramSet.get(nGram.hashCode());
+        return nGramSet.get(nGram.getWords());
     }
 
     @Override
@@ -149,12 +150,12 @@ public class NGramMapStorage implements NGramStorage {
             words.add(wordStorage.getWord(name));
         }
 
-        return nGramSet.get(new NGram(words).hashCode()).getCount();
+        return nGramSet.get(words).getCount();
     }
 
     @Override
     public int getNGramCount(NGram nGram) {
-        return nGramSet.get(nGram.hashCode()).getCount();
+        return nGramSet.get(nGram.getWords()).getCount();
     }
 
     @Override

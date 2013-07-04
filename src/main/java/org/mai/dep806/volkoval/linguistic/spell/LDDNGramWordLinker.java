@@ -134,8 +134,10 @@ public class LDDNGramWordLinker {
             super.initialize();
 
             for (String permut : LinguaUtil.getLevensteinDamerauDisplacement(seed)) {
-                elements.add(permut);
-                summarizedFrequency += storage.getWordCount(permut);
+                if (storage.getWord(permut).getCount() > 0) {
+                    elements.add(permut);
+                    summarizedFrequency += storage.getWordCount(permut);
+                }
             }
             summarizedFrequency += storage.getWordCount(seed);
         }

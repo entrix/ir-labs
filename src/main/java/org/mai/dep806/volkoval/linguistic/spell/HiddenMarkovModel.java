@@ -1,5 +1,6 @@
 package org.mai.dep806.volkoval.linguistic.spell;
 
+import org.mai.dep806.volkoval.StringUtil;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
@@ -60,14 +61,17 @@ public class HiddenMarkovModel {
             symbolEmission.add(new ArrayList<Double>());
         }
 
+        model.getProbability(StringUtil.asList("просто", "быть"));
+        model.getProbability(StringUtil.asList("Жиль"));
+
         // here we are filling the State Emission Probability sequence
         for (int t = 0; t < n; ++t) {
                 // compute P(Yj|Yi) = P(Yi,Yj) / P(Yi)
             if (t == 0) {
                 for (String name : linker.getAllEquivalences(original.get(t))) {
 
-                    double Pxt = model.getProbability(
-                            Arrays.asList(new String[]{ name }));
+                    double Pxt = model.getProbability(StringUtil.asList(name));
+
 
                     stateEmission.get(t).add(Pxt);
                 }
@@ -77,23 +81,21 @@ public class HiddenMarkovModel {
                 for (String nameFirst : linker.getAllEquivalences(original.get(t - 1))) {
                     for (String nameSecond : linker.getAllEquivalences(original.get(t))) {
 
-                        double Pxtt = model.getProbability(
-                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
-                        double Pxt = model.getProbability(
-                                        Arrays.asList(new String[]{ nameFirst }));
+                        double Pxtt = model.getProbability(StringUtil.asList(nameFirst, nameSecond));
+                        double Pxt  = model.getProbability(StringUtil.asList(nameFirst));
+
 
                         if (Pxtt / ((Pxt == 0) ? MIN : Pxt) > 1.0) {
                             System.out.printf("error: name: %15s %15s pxtt: %10f pxt: %10f\n", nameFirst, nameSecond,
                                     Pxtt, Pxt);
                             stateEmission.get(t).add(MIN);
-                            Pxtt = model.getProbability(
-                                    Arrays.asList(new String[]{ nameFirst, nameSecond }));
+                            Pxtt = model.getProbability(StringUtil.asList(nameFirst, nameSecond));
                         }
                         else {
                             stateEmission.get(t).add(Pxtt / ((Pxt == 0) ? MIN : Pxt));
                             if (m < Pxtt / ((Pxt == 0) ? MIN : Pxt)) {
                                 m = Pxtt / ((Pxt == 0) ? MIN : Pxt);
-                                System.out.println("eq name: " + nameFirst + " " + nameSecond + " m: " + m);
+//                                System.out.println("eq name: " + nameFirst + " " + nameSecond + " m: " + m);
                             }
                         }
                         iter++;
@@ -126,8 +128,7 @@ public class HiddenMarkovModel {
                     double Poxt = linker.getEquivFreq(name);
 //                    double Poxt = model.getProbability(
 //                            Arrays.asList(new String[]{ original.get(t) }));
-                    double Pxt  = model.getProbability(
-                            Arrays.asList(new String[]{ name }));
+                    double Pxt  = model.getProbability(StringUtil.asList(name));
 
 
 //                    System.out.println("eq name: " + name);
@@ -149,16 +150,18 @@ public class HiddenMarkovModel {
 
                         double Pot = linker.getEquivFreq(original.get(t));
                         double Poxt = linker.getEquivFreq(nameFirst) * linker.getEquivFreq(nameSecond);
+//                        double Pxtt = model.getProbability(StringUtil.asList(nameFirst, nameSecond));
+
 //                        double Poxt = model.getProbability(
 //                                Arrays.asList(new String[]{ original.get(t), nameSecond }));
 //                        double Pxt = model.getProbability(
 //                                Arrays.asList(new String[]{ nameFirst, nameSecond }));
 
 //                        System.out.println("eq names: " + nameSecond);
-                          if (m < (Pot * Poxt)) {
-                            m = (Pot * Poxt);
-//                            System.out.println("eq name: " + nameFirst + " " + nameSecond);
-                          }
+//                          if (m < (Pot * Poxt)) {
+//                            m = (Pot * Poxt);
+////                            System.out.println("eq name: " + nameFirst + " " + nameSecond);
+//                          }
                         symbolEmission.get(t).add((Pot * Poxt));
                         iter++;
                     }
@@ -167,23 +170,36 @@ public class HiddenMarkovModel {
         }
     }
 
-    public void computeChain() throws UnsupposedTypeException {
+    public void computeChain() throws UnsupposedTypeException, UnsupposedArgumentException {
         // viterbi realization
 
-        int T = original.size();
-        int[] deltaMax = new int[T];
+        int T               = original.size();
+        int lastMax         = 0;
+        int[] deltaMax      = new int[T + 1];
+        List<Double> deltas = new ArrayList<Double>();
+        List<List<Integer>> phi = new ArrayList<>();
 
         // step 1. initialization
-//        for (int i = 0; i < T; ++ i) {
-//            deltaPrev[i] = model.getProbability(original.subList(i, i + 1));
-//        }
+        for (int i = 0; i < T; ++ i) {
+            phi.add(new ArrayList<Integer>());
+        }
+        for (String elem : linker.getAllEquivalences(original.get(0))) {
+            deltas.add(model.getProbability(StringUtil.asList(elem)));
+        }
+
 
         // step 2. induction
-        for (int t = 0; t < T; ++t) {
-                deltaMax[t] = getMax(t);
+        for (int t = 1; t < T; ++t) {
+            lastMax = getMax(phi, deltas, t - 1);
         }
 
         corrected = new ArrayList<>();
+
+        // step 3
+        deltaMax[T-1] = lastMax;
+        for (int i = T - 1; i >= 1; --i) {
+            deltaMax[i-1] = phi.get(i).get(deltaMax[i]);
+        }
 
         for (int t = 0, i; t < T; ++t) {
             i = 0;
@@ -196,24 +212,55 @@ public class HiddenMarkovModel {
         }
     }
 
-    private int getMax(int t) {
-        int n        = stateEmission.get(t).size();
-        double[] res = new double[n];
-        double  max  = 0.0;
-        int argMax   = 0;
+    private int getMax(List<List<Integer>> phi, List<Double> deltaPrev, int t) {
+        int prevLayerSize = linker.getAllEquivalences(original.get(t)).size();
+        int nextLayerSize = linker.getAllEquivalences(original.get(t + 1)).size();
+        List<Double> deltaRes   = new ArrayList<>();
+        List<Integer> deltaArgs = new ArrayList<>();
+        double   max            = 0.0;
+        double   current;
+        int      argMax         = 0;
+        int iter                = 0;
 
-        for (int i = 0; i < n; ++i) {
-            res[i] = stateEmission.get(t).get(i) * symbolEmission.get(t).get(i);
+        for (int j = 0; j < nextLayerSize; ++j) {
+            iter =  j;
 
-            if (max < res[i]) {
-                max    = res[i];
-                argMax = i;
+            for (int i = 0; i < prevLayerSize; ++i) {
+                current = deltaPrev.get(i) *
+                        stateEmission.get(t + 1).get(iter) *
+                        symbolEmission.get(t + 1).get(iter);
+                iter += nextLayerSize;
+
+                if (max < current) {
+                    max    = current;
+                    argMax = i % prevLayerSize;
+                }
             }
+
+
+            deltaRes.add(max);
+            deltaArgs.add(argMax);
+            max = 0.0;
         }
 
-        if (t > 0) {
-            argMax %= linker.getAllEquivalences(original.get(t)).size();
+        // reinitialise deltaPrev
+        deltaPrev.clear();
+        argMax = 0;
+        iter   = 0;
+        for (double delta : deltaRes) {
+            deltaPrev.add(delta);
+            if (max < delta) {
+                max    = delta;
+                argMax = iter;
+            }
+            iter++;
         }
+
+        // add phi store
+        for (int arg : deltaArgs) {
+            phi.get(t + 1).add(arg);
+        }
+
         return argMax;
     }
 

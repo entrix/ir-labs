@@ -38,46 +38,53 @@ public class LinguaUtil {
 
     private static CommonStatistic statistic;
 
-    private static List<Character> consonants;
+    private static List<Character> letters;
 
-    private static List<Character> vowels;
+
+    private static boolean normalize = false;
+
+    public static boolean isNormalize() {
+        return normalize;
+    }
+
+    public static void setNormalize(boolean normalize) {
+        LinguaUtil.normalize = normalize;
+    }
 
     static {
-        consonants = new ArrayList<>();
-        consonants.add('б');
-        consonants.add('в');
-        consonants.add('г');
-        consonants.add('д');
-        consonants.add('е');
-        consonants.add('ж');
-        consonants.add('з');
-        consonants.add('к');
-        consonants.add('л');
-        consonants.add('м');
-        consonants.add('й');
-        consonants.add('н');
-        consonants.add('п');
-        consonants.add('р');
-        consonants.add('с');
-        consonants.add('т');
-        consonants.add('у');
-        consonants.add('ф');
-        consonants.add('х');
-        consonants.add('ц');
-        consonants.add('ч');
-        consonants.add('ш');
-        consonants.add('щ');
-
-        vowels = new ArrayList<>();
-        vowels.add('а');
-        vowels.add('е');
-        vowels.add('и');
-        vowels.add('о');
-        vowels.add('у');
-        vowels.add('ы');
-        vowels.add('э');
-        vowels.add('ю');
-        vowels.add('я');
+        letters = new ArrayList<>();
+        letters.add('б');
+        letters.add('в');
+        letters.add('г');
+        letters.add('д');
+        letters.add('е');
+        letters.add('ж');
+        letters.add('з');
+        letters.add('к');
+        letters.add('л');
+        letters.add('м');
+        letters.add('й');
+        letters.add('н');
+        letters.add('п');
+        letters.add('р');
+        letters.add('с');
+        letters.add('т');
+        letters.add('у');
+        letters.add('ф');
+        letters.add('х');
+        letters.add('ц');
+        letters.add('ч');
+        letters.add('ш');
+        letters.add('щ');
+        letters.add('а');
+        letters.add('е');
+        letters.add('и');
+        letters.add('о');
+        letters.add('у');
+        letters.add('ы');
+        letters.add('э');
+        letters.add('ю');
+        letters.add('я');
 
         luceneMorph = null;
         try {
@@ -121,8 +128,8 @@ public class LinguaUtil {
                 sentence = sentence.replaceAll(whiteSpacePattern, " ").trim();
 
                 for (String str : sentence.split(" ")) {
-                    if (!str.isEmpty() && str.length() > 3) {
-                        items.add(str);
+                    if (!str.isEmpty()) {
+                        items.add(str.toLowerCase());
                     }
                 }
 
@@ -173,30 +180,30 @@ public class LinguaUtil {
                 prev = seed.substring(0, i);
             }
 
-            if (consonants.contains(seed.charAt(i))) {
-                for (Character ch : consonants) {
+            if (letters.contains(seed.charAt(i))) {
+                for (Character ch : letters) {
                     if (seed.charAt(i) != ch) {
                         disSet.add(prev + String.valueOf(ch) + seed.substring(i + 1, seed.length()));
                     }
                 }
             }
-            else if (vowels.contains(seed.charAt(i))) {
-                for (Character ch : vowels) {
-                    if (seed.charAt(i) != ch) {
-                        disSet.add(prev + String.valueOf(ch) + seed.substring(i + 1, seed.length()));
-                    }
-                }
-            }
+//            else if (letters.contains(seed.charAt(i))) {
+//                for (Character ch : letters) {
+//                    if (seed.charAt(i) != ch) {
+//                        disSet.add(prev + String.valueOf(ch) + seed.substring(i + 1, seed.length()));
+//                    }
+//                }
+//            }
             // deletion
             disSet.add(prev + seed.substring(i + 1, seed.length()));
 
             // insertion
-            for (Character ch : consonants) {
+            for (Character ch : letters) {
                 disSet.add(prev + String.valueOf(ch) + seed.substring(i, seed.length()));
             }
-            for (Character ch : vowels) {
-                disSet.add(prev + String.valueOf(ch) + seed.substring(i, seed.length()));
-            }
+//            for (Character ch : letters) {
+//                disSet.add(prev + String.valueOf(ch) + seed.substring(i, seed.length()));
+//            }
 
             if (i > 0) {
                 prev = "";

@@ -30,7 +30,7 @@ public class NGramProcessor {
 
     private NGramFactory nGramFactory;
 
-    private boolean normalize = NGramUtil.isNormalize();
+    private boolean normalize = LinguaUtil.isNormalize();
 
 
     public NGramProcessor() {
@@ -65,7 +65,7 @@ public class NGramProcessor {
         this.nGramFactory = nGramFactory;
         this.statistic    = statistic;
         this.windowSize   = windowSize >= 2 ?
-                windowSize : 2;
+                2 : windowSize;
         this.nGramType    = nGramFactory.getStorage().getNGramType();
     }
 
@@ -126,7 +126,9 @@ public class NGramProcessor {
                             nGram.addSynonym(nGramFactory.createNGram(names));
                         }
                         else {
-                            nGramFactory.addNGram(names);
+//                            if (names.get(0).equals("странный")) {
+                                nGramFactory.addNGram(names);
+//                            }
                         }
                     }
             } catch (UnsupposedTypeException e) {

@@ -5,7 +5,8 @@ import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
-import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.ner.LEXRetriever;
 import org.mai.dep806.volkoval.linguistic.ner.MWU;
 import org.mai.dep806.volkoval.linguistic.ngram.*;
@@ -26,9 +27,9 @@ public class ThirdLab extends AbstractLab {
     private static Logger logger = LogManager.getLogger(ThirdLab.class);
 
 
-    private HeadOutNGramModel.HeadOutNGramProbabilityEstimator gramProbabilityEstimator;
-    private HeadOutNGramModel.HeadOutNGramProbabilityEstimator biGramProbabilityEstimator;
-    private HeadOutNGramModel.HeadOutNGramProbabilityEstimator triGramProbabilityEstimator;
+    private HeldOutNGramModel.HeadOutNGramProbabilityEstimator gramProbabilityEstimator;
+    private HeldOutNGramModel.HeadOutNGramProbabilityEstimator biGramProbabilityEstimator;
+    private HeldOutNGramModel.HeadOutNGramProbabilityEstimator triGramProbabilityEstimator;
 
     private LEXRetriever retriever = null;
 
@@ -47,7 +48,7 @@ public class ThirdLab extends AbstractLab {
         return "Third Lab";
     }
 
-    public void setMode(InputMode mode) throws UnsupposedArgumentException {
+    public void setMode(InputMode mode) throws UnsupposedArgumentException, UnsupposedTypeException {
         this.mode = mode;
 
         if (mode == InputMode.PROPER_NAME) {
@@ -102,11 +103,11 @@ public class ThirdLab extends AbstractLab {
         public void initHandler() throws UnsupposedArgumentException, UnsupposedTypeException {
             WordMapStorage storage = new WordMapStorage();
 
-            gramProbabilityEstimator    = new HeadOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.UNI_GRAM);
+            gramProbabilityEstimator    = new HeldOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.UNI_GRAM);
             gramProbabilityEstimator.initialize(storage);
-            biGramProbabilityEstimator  = new HeadOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.BI_GRAM);
+            biGramProbabilityEstimator  = new HeldOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.BI_GRAM);
             biGramProbabilityEstimator.initialize(storage);
-            triGramProbabilityEstimator = new HeadOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.TRI_GRAM);
+            triGramProbabilityEstimator = new HeldOutNGramModel.HeadOutNGramProbabilityEstimator(NGram.NGramType.TRI_GRAM);
             triGramProbabilityEstimator.initialize(storage);
         }
 

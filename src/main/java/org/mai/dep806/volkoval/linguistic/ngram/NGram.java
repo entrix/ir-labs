@@ -42,15 +42,18 @@ public class NGram {
 //        return hashSum;
 //    }
 
-    protected NGram(List<Word> words) throws UnsupposedArgumentException {
+
+    protected NGram(List<Word> words) throws UnsupposedArgumentException, UnsupposedTypeException {
         this.words = words;
         count = 0;
+        type = NGramUtil.getTypeByLength(words.size());
     }
 
 
-    public NGram(List<Word> words, int count) throws UnsupposedArgumentException {
+    public NGram(List<Word> words, int count) throws UnsupposedArgumentException, UnsupposedTypeException {
         this.words = words;
         this.count = count;
+        type = NGramUtil.getTypeByLength(words.size());
     }
 
     protected NGram(Word ... wordArray) throws UnsupposedTypeException, UnsupposedArgumentException {

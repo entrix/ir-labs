@@ -6,7 +6,8 @@ import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
-import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
@@ -58,6 +59,7 @@ public class FourthLab extends AbstractLab {
                         "------------------------------------------------------------------------------------------------");
                 System.out.println("spellChecker: " + spellChecker.getName());
                 System.out.println("model: " + spellChecker.getModel());
+                ((HeldOutNGramModel) spellChecker.getModel()).setMode(HeldOutNGramModel.ModelMode.TRAIN);
 
                 for (String query : queries) {
                     System.out.println("-------------------------------------------------------------------------------------" +
@@ -96,7 +98,7 @@ public class FourthLab extends AbstractLab {
     }
 
     @Override
-    public void flush() throws UnsupposedArgumentException {
+    public void flush() throws UnsupposedArgumentException, UnsupposedTypeException {
         new FourthLabDataHandler().flushHandler();
     }
 
@@ -105,7 +107,7 @@ public class FourthLab extends AbstractLab {
             for (String model : models) {
                 switch (model) {
                     case "heldout":
-                        this.models.add(new HeadOutNGramModel(NGram.NGramType.UNI_GRAM, 2));
+                        this.models.add(new HeldOutNGramModel(NGram.NGramType.UNI_GRAM, 2));
                         break;
                 }
             }
@@ -157,7 +159,7 @@ public class FourthLab extends AbstractLab {
         }
 
         @Override
-        public void flushHandler() throws UnsupposedArgumentException {
+        public void flushHandler() throws UnsupposedArgumentException, UnsupposedTypeException {
             for (NGramModel model : models) {
                 model.refreshStatistics();
             }

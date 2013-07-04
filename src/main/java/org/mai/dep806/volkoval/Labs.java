@@ -7,8 +7,11 @@ import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.data.SAXDataRetriever;
 import org.mai.dep806.volkoval.data.SIngleThreadDataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
+import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.lab.*;
-import org.mai.dep806.volkoval.linguistic.model.HeadOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.ngram.NGramUtil;
 import org.xml.sax.SAXException;
@@ -124,7 +127,7 @@ public class Labs {
                 xmlReader.setContentHandler((SIngleThreadDataRetriever) retriever);
 
                 int top   = 30;
-                int ratio = 0;
+                int ratio;
                 int iter  = 0;
 
                 lab.setDataRetriever(retriever);
@@ -134,14 +137,15 @@ public class Labs {
                 }
 
                 if (argsMap.containsKey("ratio")) {
-                    ratio = (int) (argsMap.get("file").size()
+                    ratio = (int) Math.round(argsMap.get("file").size()
                             * Double.valueOf(argsMap.get("ratio").get(0)));
-                }
-                if (argsMap.containsKey("normalize")) {
-                    NGramUtil.setNormalize(true);
                 }
                 else {
                     ratio = argsMap.get("file").size() / 2;
+                }
+
+                if (argsMap.containsKey("normalize")) {
+                    LinguaUtil.setNormalize(true);
                 }
 
                 if (labNumber == 1) {
@@ -188,10 +192,17 @@ public class Labs {
                 lab.init();
                 for (String filename : argsMap.get("file")) {
                     if ((labNumber == 2 || labNumber == 3 || labNumber == 4) && iter == ratio) {
-                        if (lab instanceof SecondLab) {
+                        if ((lab instanceof SecondLab)) {
                             for (NGramModel model : ((SecondLab) lab).getModels()) {
                                 if (model.getType() == NGramModel.NGramModelType.HELD_OUT) {
-                                    ((HeadOutNGramModel) model).setMode(HeadOutNGramModel.ModelMode.VALIDATION);
+                                    ((HeldOutNGramModel) model).setMode(HeldOutNGramModel.ModelMode.VALIDATION);
+                                }
+                            }
+                        }
+                        else if ((lab instanceof FourthLab)) {
+                            for (NGramModel model : ((FourthLab) lab).getModels()) {
+                                if (model.getType() == NGramModel.NGramModelType.HELD_OUT) {
+                                    ((HeldOutNGramModel) model).setMode(HeldOutNGramModel.ModelMode.VALIDATION);
                                 }
                             }
                         }
@@ -237,6 +248,9 @@ public class Labs {
                 e.printStackTrace();
                 logger.error(e);
             } catch (UnsupposedArgumentException e) {
+                e.printStackTrace();
+                logger.error(e);
+            } catch (UnsupposedTypeException e) {
                 e.printStackTrace();
                 logger.error(e);
             }

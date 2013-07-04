@@ -23,7 +23,7 @@ public interface NGramModel {
 
     public double getProbability(List<String> prev, String next) throws UnsupposedTypeException, UnsupposedArgumentException;
 
-    public void refreshStatistics() throws UnsupposedArgumentException;
+    public void refreshStatistics() throws UnsupposedArgumentException, UnsupposedTypeException;
 
     public NGram.NGramType getNGramType();
 
@@ -33,7 +33,7 @@ public interface NGramModel {
 
     public NGramModelType getType();
 
-    public List<HeadOutNGramModel.HeadOutNGramProbabilityEstimator> getEstimators();
+    public List<HeldOutNGramModel.HeadOutNGramProbabilityEstimator> getEstimators();
 
     public double getProbability(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException;
 

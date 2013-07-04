@@ -16,11 +16,11 @@ import java.util.Map;
  */
 public interface NGramStorage {
 
-    public NGram addNGram(List<String> names) throws UnsupposedArgumentException;
+    public NGram addNGram(List<String> names) throws UnsupposedArgumentException, UnsupposedTypeException;
 
-    public NGram getNGram(List<String> names) throws UnsupposedArgumentException;
+    public NGram getNGram(List<String> names) throws UnsupposedArgumentException, UnsupposedTypeException;
 
-    public NGram getNGram(NGram nGram) throws UnsupposedArgumentException;
+    public NGram getNGram(NGram nGram) throws UnsupposedArgumentException, UnsupposedTypeException;
 
     public NGram.NGramType getNGramType();
 
