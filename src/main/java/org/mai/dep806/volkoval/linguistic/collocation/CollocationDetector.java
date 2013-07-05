@@ -47,7 +47,7 @@ public abstract class CollocationDetector {
         return new ArrayList<>();
     }
 
-    public class NGramSortUnit {
+    public static class NGramSortUnit {
         Double coeff;
         NGram nGram;
 
@@ -62,6 +62,15 @@ public abstract class CollocationDetector {
 
         public NGram getnGram() {
             return nGram;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof NGramSortUnit)) {
+                return false;
+            }
+
+            return nGram.equals((NGram) ((NGramSortUnit) obj).getnGram());
         }
     }
 

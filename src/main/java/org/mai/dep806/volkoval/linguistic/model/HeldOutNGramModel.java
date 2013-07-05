@@ -46,6 +46,14 @@ public class HeldOutNGramModel implements NGramModel {
         initialze();
     }
 
+    public HeldOutNGramModel(List<NGramProbabilityEstimator> estimators) {
+        this.nGramProbabilityEstimators = new ArrayList<>();
+        for (NGramProbabilityEstimator estimator : estimators) {
+            nGramProbabilityEstimators.add((HeadOutNGramProbabilityEstimator) estimator);
+        }
+        this.nGramBaseType = estimators.get(0).getTrainStorage().getNGramType();
+    }
+
     @Override
     public String getName() {
         return "Held Out Model";

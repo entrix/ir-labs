@@ -7,10 +7,12 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ner.LEXRetriever;
 import org.mai.dep806.volkoval.linguistic.ner.MWU;
 import org.mai.dep806.volkoval.linguistic.ngram.*;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,10 +55,17 @@ public class ThirdLab extends AbstractLab {
 
         if (mode == InputMode.PROPER_NAME) {
             if (retriever == null) {
+                List<NGramProbabilityEstimator> estimators = new ArrayList<>();
+
                 gramProbabilityEstimator.computeStatistics();
                 biGramProbabilityEstimator.computeStatistics();
                 triGramProbabilityEstimator.computeStatistics();
-                retriever = new LEXRetriever(gramProbabilityEstimator, biGramProbabilityEstimator, triGramProbabilityEstimator);
+
+                estimators.add(gramProbabilityEstimator);
+                estimators.add(biGramProbabilityEstimator);
+                estimators.add(triGramProbabilityEstimator);
+
+                retriever = new LEXRetriever(new HeldOutNGramModel(estimators));
             }
         }
     }

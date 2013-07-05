@@ -129,7 +129,7 @@ public class LinguaUtil {
 
                 for (String str : sentence.split(" ")) {
                     if (!str.isEmpty()) {
-                        items.add(str.toLowerCase());
+                        items.add(str);
                     }
                 }
 

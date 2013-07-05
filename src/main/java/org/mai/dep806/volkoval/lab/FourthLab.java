@@ -74,7 +74,16 @@ public class FourthLab extends AbstractLab {
 
                     for (List<String> sentence : LinguaUtil.toSentences((query).toCharArray())) {
                         int i = 0;
-                        for (String elem : spellChecker.getCorrection(sentence)) {
+                        List<String> prepSentence = new ArrayList<>();
+
+                        if (sentence.isEmpty()) {
+                            continue;
+                        }
+
+                        for (String word : sentence) {
+                            prepSentence.add(word.toLowerCase());
+                        }
+                        for (String elem : spellChecker.getCorrection(prepSentence)) {
                             if (i == 0) {
                                 elem = (String.valueOf(elem.toCharArray()[0]).toUpperCase()) +
                                         elem.substring(1);
@@ -82,6 +91,7 @@ public class FourthLab extends AbstractLab {
                             }
                             System.out.print(elem + " ");
                         }
+                        System.out.print(". ");
                     }
                     System.out.println(".");
                 }
