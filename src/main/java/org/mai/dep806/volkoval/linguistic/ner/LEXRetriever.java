@@ -1,8 +1,10 @@
 package org.mai.dep806.volkoval.linguistic.ner;
 
+import org.mai.dep806.volkoval.StringUtil;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector;
 import org.mai.dep806.volkoval.linguistic.collocation.LikeHoodCollocationDetector;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
@@ -181,6 +183,10 @@ public class LEXRetriever {
             }
         }
 
+        if (!tempResult.isEmpty()) {
+            resultSeqs.add(tempResult);
+        }
+
         return resultSeqs;
     }
 
@@ -202,36 +208,94 @@ public class LEXRetriever {
     public List<MWU> retrieveProperNames(List<String> tokens) throws UnsupposedArgumentException, UnsupposedTypeException {
         List<MWU> mwuList = new ArrayList<>();
         List<List<String>> upperSeqs = getUpperSeqs(tokens);
+
+
+//        printChunks(tokens, upperSeqs);
+
+        for (int k = 0; k < upperSeqs.size(); ++k) {
+            List<String> seq = upperSeqs.get(k);
+            for (int i = 0; i < seq.size(); ++i) {
+                if (stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(i))) ||
+                    stopWords.contains(seq.get(i).toLowerCase())) {
+
+                    if (i + 2 < seq.size() &&
+                            Character.isUpperCase(seq.get(i).charAt(0)) &&
+                            Character.isLowerCase(seq.get(i + 1).charAt(0)) &&
+                            Character.isUpperCase(seq.get(i + 2).charAt(0))) {
+                        continue;
+                    }
+                    upperSeqs.remove(seq);
+                    if (i > 0 && seq.size() > 1) {
+                        upperSeqs.add(seq.subList(0, i));
+                    }
+                    if (i + 1 < seq.size()) {
+                        upperSeqs.add(seq.subList(i + 1, seq.size()));
+                    }
+                    break;
+                }
+            }
+        }
+
+        for (List<String> seq : filterSeqs(tokens.get(0), upperSeqs)) {
+            mwuList.add(new MWU(seq));
+        }
+
+        return mwuList;
+    }
+
+    private  List<List<String>> filterSeqs(String first, List<List<String>> upperSeqs)
+            throws UnsupposedArgumentException, UnsupposedTypeException {
+
         CollocationDetector[] detectors = new CollocationDetector[] {
                 null,
                 gramDetector,
                 biGramDetector,
                 triGramDetector
         };
-
-//        printChunks(tokens, upperSeqs);
+        List<List<String>> newSeqs = new ArrayList<>();
 
         for (List<String> seq : upperSeqs) {
             if (seq.size() <= 4) {
                 boolean truthSeqOne = true;
                 boolean truthSeqTwo = true;
 
-                for (int step = 1; step <= 2; ++step) {
+                for (int step = 1; step <= 4; ++step) {
 
 //                    if (seq.size() == 1) {
 //                        continue;
 //                    }
                     for (int i = 0; i < seq.size(); i += step) {
 
+                        if (stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(0))) ||
+                                stopWords.contains(seq.get(0))) {
+                            truthSeqOne = false;
+                        }
+
                         if (i + step <= seq.size()) {
                             List<String> subSeq = seq.subList(i, i + step);
-                            NGram        nGram  = model.getNGramStorages().get(step-1).getNGram(subSeq);
 
                             if (subSeq.size() == 1) {
+                                if (first.equals(subSeq.get(0))) {
+                                    truthSeqOne = false;
+                                }
+                                if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
+                                    stopWords.contains(subSeq.get(0))) {
+                                    truthSeqOne = false;
+                                }
+
                                 truthSeqOne &= model.getProbability(subSeq) *
-                                        linker.getEquivFreq(subSeq.get(0)) > 0.0001;
+                                        linker.getEquivFreq(subSeq.get(0)) > 0.000000001;
                             }
                             else if (step == 2) {
+                                if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
+                                        stopWords.contains(subSeq.get(0)) ||
+                                        stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(1))) ||
+                                        stopWords.contains(subSeq.get(1))) {
+                                    truthSeqOne = false;
+                                }
+
+                                NGram nGram  = model.getNGramStorages().get(step-1).getNGram(subSeq);
+
                                 truthSeqOne &= detectors[step].getLatestResult().contains(
                                         new NGramSortUnit(0.0, nGram));
 
@@ -240,29 +304,44 @@ public class LEXRetriever {
 ////                                    System.out.println("Ist's here!!!!!!!!!!!!!!!!!!!!!!!!!");
 //                                }
                             }
+                            else if (step > 2 && subSeq.size() > 2) {
+                                for (int j = 0; j < subSeq.size() - 2; ++j) {
+                                    if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j))) ||
+                                            stopWords.contains(subSeq.get(j)) ||
+                                            stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j + 2))) ||
+                                            stopWords.contains(subSeq.get(j + 2))) {
+                                        truthSeqTwo = false;
+                                    }
 
-                            if (subSeq.size() > 2) {
-                                for (int j = 0; j < subSeq.size() - 1; ++j) {
-                                    if (Character.isLowerCase(subSeq.get(j).charAt(0))) {
-                                        truthSeqTwo &=
-                                                f(subSeq.get(j - 1), subSeq.get(j), subSeq.get(j + 1), 3) > tau;
+                                    if (Character.isUpperCase(subSeq.get(j).charAt(0)) &&
+                                            Character.isLowerCase(subSeq.get(j).charAt(0)) &&
+                                            Character.isUpperCase(subSeq.get(j).charAt(0))) {
+
+                                        if (Character.isLowerCase(subSeq.get(j).charAt(0))) {
+                                            truthSeqTwo &=
+                                                    f(subSeq.get(j), subSeq.get(j + 1), subSeq.get(j + 2), 3) > tau;
+                                        }
                                     }
                                 }
-                            }
 //                            model.getProbability(seq)
+                            }
                         }
                     }
 
-
-
-                    if (truthSeqOne && truthSeqTwo) {
-                        mwuList.add(new MWU(seq));
+                    if (seq.size() == 1) {
+                        truthSeqOne &= model.getProbability(seq) *
+                                linker.getEquivFreq(seq.get(0)) > 0.001;
                     }
+                }
+
+                if (truthSeqOne && truthSeqTwo) {
+
+                    newSeqs.add(seq);
                 }
             }
         }
 
-        return mwuList;
+        return newSeqs;
     }
 
 //    public List<MWU> retrieveProperNames(List<String> tokens) throws UnsupposedTypeException, UnsupposedArgumentException {
@@ -388,12 +467,13 @@ public class LEXRetriever {
 //    }
 
     private double f(String s0, String s1, String s2, int order) throws UnsupposedTypeException, UnsupposedArgumentException {
-        double numerator   = model.getProbability(
-                Arrays.asList(new String[] { s0, s1, s2}));
+        double numerator   = model.getProbability(StringUtil.asList(s0)) *
+                model.getProbability(StringUtil.asList(s0), s1) *
+                model.getProbability(StringUtil.asList(s1), s2);
         double denominator = model.getProbability(Arrays.asList(new String[]{ s0 })) *
                 model.getProbability(Arrays.asList(new String[]{s1})) *
                 model.getProbability(Arrays.asList(new String[]{s2}));
-        double scpMeasure  = Math.exp(Math.log(numerator) * order) / denominator;
+        double scpMeasure  = Math.exp(Math.log(numerator) * 3.0) / denominator;
 
         average += scpMeasure;
         number++;
@@ -408,4 +488,53 @@ public class LEXRetriever {
 
         return average / number;
     }
+
+    private final List<String> stopWords = StringUtil.asList(new String[] {
+            "-",	"еще",	"него",	"сказать",
+            "а",	"ж",	"нее",	"со",
+            "без",	"же",	"ней",	"совсем",
+            "более",	"жизнь",	"нельзя",	"так",
+            "больше",	"за",	"нет",	"такой",
+            "будет",	"зачем",	"ни",	"там",
+            "будто",	"здесь",	"нибудь",	"тебя",
+            "бы",	"и",	"никогда",	"тем",
+            "был",	"из",	"ним",	"теперь",
+            "была",	"из-за",	"них",	"то",
+            "были",	"или",	"ничего",	"тогда",
+            "было",	"им",	"но",	"того",
+            "быть",	"иногда",	"ну",	"тоже",
+            "в",	"их",	"о",	"только",
+            "вам",	"к",	"об",	"том",
+            "вас",	"кажется",	"один",	"тот",
+            "вдруг",	"как",	"он",	"три",
+            "ведь",	"какая",	"она",	"тут",
+            "во",	"какой",	"они",	"ты",
+            "вот",	"когда",	"опять",	"у",
+            "впрочем",	"конечно",	"от",	"уж",
+            "все",	"которого",	"перед",	"уже",
+            "всегда",	"которые",	"по",	"хорошо",
+            "всего",	"кто",	"под",	"хоть",
+            "всех",	"куда",	"после",	"чего",
+            "всю",	"ли",	"потом",	"человек",
+            "вы",	"лучше",	"потому",	"чем",
+            "г",	"между",	"почти",	"через",
+            "где",	"меня",	"при",	"что",
+            "говорил",	"мне",	"про",	"чтоб",
+            "да",	"много",	"раз",	"чтобы",
+            "даже",	"может",	"разве",	"чуть",
+            "два",	"можно",	"с",	"эти",
+            "для",	"мой",	"сам",	"этого",
+            "до",	"моя",	"свое",	"этой",
+            "другой",	"мы",	"свою",	"этом",
+            "его",	"на",	"себе",	"этот",
+            "ее",	"над",	"себя",	"эту",
+            "ей",	"надо",	"сегодня",	"я",
+            "ему",	"наконец",	"сейчас",
+            "если",	"нас",	"сказал",
+            "есть",	"не",	"сказала",
+            "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "к", "л", "м", "н",
+            "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "э", "ь", "ы", "ю", "я",
+            ".",",","-", "_", "=", "+", "/","!", "\"", ";",":", "%","?", "*", "(", ")",
+            "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "ноль"
+    });
 }
