@@ -2,18 +2,16 @@ package org.mai.dep806.volkoval;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.MarkerManager;
+import org.mai.dep806.volkoval.data.CounterDataHandler;
+import org.mai.dep806.volkoval.data.DataHandler;
 import org.mai.dep806.volkoval.data.DataRetriever;
-import org.mai.dep806.volkoval.data.SAXDataRetriever;
 import org.mai.dep806.volkoval.data.SIngleThreadDataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.lab.*;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
-import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
-import org.mai.dep806.volkoval.linguistic.ngram.NGramUtil;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 
@@ -129,6 +127,25 @@ public class Labs {
                 int top   = 30;
                 int ratio;
                 int iter  = 0;
+
+                double precisionRank = 1.0;
+                HashMap<String, Integer> wordCounts = new HashMap<>();
+
+                if (argsMap.containsKey("precisionrank")) {
+                    LinguaUtil.setPrecisionRank(true);
+                    precisionRank = Double.valueOf(argsMap.get("detector").get(0));
+
+                    DataHandler counter = new CounterDataHandler();
+
+                    retriever.addDataHandler(counter);
+                    for (String filename : argsMap.get("file")) {
+                        xmlReader.parse(convertToFileURL(filename));
+                        wordCounts.put(filename,
+                                (int) (((CounterDataHandler) counter).getCounts() * precisionRank));
+                    }
+                }
+
+
 
                 lab.setDataRetriever(retriever);
 

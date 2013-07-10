@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianAnalyzer;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.util.Version;
 
@@ -43,13 +42,8 @@ public class LinguaUtil {
 
     private static boolean normalize = false;
 
-    public static boolean isNormalize() {
-        return normalize;
-    }
+    private static boolean precisionRank = false;
 
-    public static void setNormalize(boolean normalize) {
-        LinguaUtil.normalize = normalize;
-    }
 
     static {
         letters = new ArrayList<>();
@@ -96,6 +90,22 @@ public class LinguaUtil {
             e.printStackTrace();
             logger.error(e);
         }
+    }
+
+    public static boolean isNormalize() {
+        return normalize;
+    }
+
+    public static void setNormalize(boolean normalize) {
+        LinguaUtil.normalize = normalize;
+    }
+
+    public static boolean isPrecisionRank() {
+        return precisionRank;
+    }
+
+    public static void setPrecisionRank(boolean precisionRank) {
+        LinguaUtil.precisionRank = precisionRank;
     }
 
     public static List<List<String>> toSentences(char[] ch) {

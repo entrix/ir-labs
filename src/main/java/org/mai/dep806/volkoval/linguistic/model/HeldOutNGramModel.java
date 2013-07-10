@@ -147,7 +147,6 @@ public class HeldOutNGramModel implements NGramModel {
         return nGramBaseType;
     }
 
-    @Override
     public List<HeadOutNGramProbabilityEstimator> getEstimators() {
         return nGramProbabilityEstimators;
     }
