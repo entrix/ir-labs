@@ -179,6 +179,25 @@ public class    LinguaUtil {
         return normalForm;
     }
 
+    public static List<String> getRussianForm(String word) {
+        List<String> normalForm = StringUtil.asList(word);
+
+        try {
+            normalForm = luceneMorph.getMorphInfo(word.toLowerCase());
+        }
+        catch (Exception e) {
+            // do nothing
+        }
+//        try {
+//            normalForm = russianParser.parse(normalForm).toString().split(parserDelimiterPattern)[1];
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//            logger.error(e);
+//        }
+
+        return normalForm;
+    }
+
     public static boolean isCyrillic(char c) {
         return Character.UnicodeBlock.CYRILLIC.equals(Character.UnicodeBlock.of(c));
     }

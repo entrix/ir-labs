@@ -104,7 +104,7 @@ public class SimpleNGram {
         double step = 0.1;
 
         for (String token : words) {
-            code += token.hashCode() * prec;
+            code += (token.hashCode() % 2000000000) * prec;
             prec += step;
         }
 

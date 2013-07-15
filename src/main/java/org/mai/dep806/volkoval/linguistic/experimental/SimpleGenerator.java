@@ -3,6 +3,7 @@ package org.mai.dep806.volkoval.linguistic.experimental;
 import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class SimpleGenerator {
     private static Random random = new Random(System.currentTimeMillis());
 
     private HashMap<Integer, List<SimpleNGram>> nGramMap = new HashMap<>();
+    private HashMap<String, Integer> wordMap = new HashMap<>();
     private List<SimpleNGram> startNGramList = new ArrayList<>();
 
     private SimpleNGram.NGramType nGramType;
@@ -131,6 +133,7 @@ public class SimpleGenerator {
 
         for (SimpleNGram next : nextNGrams) {
             System.out.println("next = " + next);
+            System.out.println(LinguaUtil.getRussianForm(next.getWords().get(0)));
 
             if (isPhrase && next.getFlag() == SimpleNGram.PositionFlag.END) {
                 freqSum += next.getCount() * 2;
@@ -193,11 +196,22 @@ public class SimpleGenerator {
                 for (List<String> names : NGramUtil.groupWords(subTokens, nGramType)) {
                     SimpleNGram nGram = new SimpleNGram(names);
 
-                    if (!nGramMap.containsKey(nGram)) {
+                    if (!nGramMap.containsKey(nGram.hashCode())) {
                         nGramMap.put(nGram.hashCode(), new ArrayList<SimpleNGram>());
+                        nGramMap.get(nGram.hashCode()).add(nGram);
                     }
-                    nGramMap.get(nGram.hashCode()).add(nGram);
+                    else {
+                        nGram = (SimpleNGram) nGramMap.get(nGram.hashCode()).get(0);
+                    }
                     fullCount++;
+                    for (String name : names) {
+                        if (!wordMap.containsKey(name)) {
+                            wordMap.put(name, 1);
+                        }
+                        else {
+                            wordMap.put(name, wordMap.get(name) + 1);
+                        }
+                    }
 
                     if (cursor == 1) {
                         nGram.setFlag(SimpleNGram.PositionFlag.START);
