@@ -90,11 +90,11 @@ public class NGramMapStorage implements NGramStorage {
             return null;
         }
 
-        if (!nGramSet.containsKey(nGram.hashCode())) {
+        if (!nGramSet.containsKey(nGram.getWords())) {
             nGramSet.put(nGram.getWords(), nGram);
         }
         else {
-            nGram = nGramSet.get(nGram.hashCode());
+            nGram = nGramSet.get(nGram.getWords());
             nGram.incrementCount();
         }
 
@@ -179,6 +179,28 @@ public class NGramMapStorage implements NGramStorage {
 
     public int getWordCount(Word word) throws UnsupposedTypeException {
         return wordStorage.getWordCount(word);
+    }
+
+    @Override
+    public double intersect(NGramStorage externStorage) throws UnsupposedArgumentException, UnsupposedTypeException {
+        int count = 0;
+
+        for (NGram nGram : externStorage.getAllNGrams()) {
+            List<Word> names = nGram.getWords();
+            List<Word> words = new ArrayList<>(names.size());
+
+            for (Word name : names) {
+                words.add(wordStorage.getWord(name.getName()));
+            }
+
+            NGram keyNGram = new NGram(words);
+
+            if (nGramSet.containsKey(keyNGram.getWords())) {
+                count++;
+            }
+        }
+
+        return (double) count / externStorage.getNGramCount();
     }
 
     //    @Override

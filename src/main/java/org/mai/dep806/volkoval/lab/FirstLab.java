@@ -5,12 +5,12 @@ import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
-import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.collocation.*;
 import org.mai.dep806.volkoval.linguistic.ngram.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,7 +24,9 @@ public class FirstLab extends AbstractLab {
     private static Logger logger = LogManager.getLogger(FirstLab.class);
 
     private NGramProcessor processor;
-    private List<CollocationDetector> detectors = new ArrayList<>();
+    private NGramProcessor testProcessor;
+    private List<CollocationDetector> detectors     = new ArrayList<>();
+    private List<CollocationDetector> testDetectors = new ArrayList<>();
 
     @Override
     public void setDataRetriever(DataRetriever dataRetriever) {
@@ -38,7 +40,7 @@ public class FirstLab extends AbstractLab {
     }
 
     @Override
-    public void produce(int top) throws UnsupposedArgumentException {
+    public void produce(int top) throws UnsupposedArgumentException, UnsupposedTypeException {
         if (top < 1 || top > 1000) {
             throw new UnsupposedArgumentException("top number must bi in range from 1 to 1000");
         }
@@ -47,14 +49,36 @@ public class FirstLab extends AbstractLab {
 
         NGram.NGramType nGramType = processor.getNGramFactory().getStorage().getNGramType();
 
+        int index = 0;
+
         for (CollocationDetector detector : detectors) {
             // header
+            System.out.println("--------------------------------------------" +
+                    "--------------------------------------------------");
+            List<CollocationDetector.NGramSortUnit> completeness =
+                    new ArrayList<>(testDetectors.get(index).getLatestResult());
+
+            int count = 0;
+
+            for (CollocationDetector.NGramSortUnit unit : completeness) {
+                List<String> names = new ArrayList<>();
+
+                for (Word word : unit.getnGram().getWords()) {
+                    names.add(word.getName());
+                }
+                if (processor.getNGramFactory().getStorage().getNGram(names).getCount() > 0) {
+                    count++;
+                }
+            }
+
+            System.out.println("completeness: " +
+                    (double) count / completeness.size());
             System.out.println("--------------------------------------------" +
                     "--------------------------------------------------");
             System.out.println("detector: " + detector.getName());
             printHeader(nGramType);
 
-            for (CollocationDetector.NGramSortUnit unit: detector.getTop(30)) {
+            for (CollocationDetector.NGramSortUnit unit: detector.getLatestResult()) {
                 List<Word> words = unit.getnGram().getWords();
 
                 // value
@@ -72,6 +96,8 @@ public class FirstLab extends AbstractLab {
                 // next line
                 System.out.println("|");
             }
+
+            index++;
         }
     }
 
@@ -117,12 +143,18 @@ public class FirstLab extends AbstractLab {
             switch (detector) {
                 case "lratio":
                     this.detectors.add(new LikeHoodCollocationDetector());
+                    this.testDetectors.add(new LikeHoodCollocationDetector());
+                    logger.info("set likehood ratio detector");
                     break;
                 case "poisson":
                     this.detectors.add(new PoissonDetector());
+                    this.testDetectors.add(new PoissonDetector());
+                    logger.info("set poisson detector");
                     break;
                 case "ttest":
                     this.detectors.add(new TTestCollocationDetector());
+                    this.testDetectors.add(new TTestCollocationDetector());
+                    logger.info("set likehood t test detector");
                     break;
             }
         }
@@ -132,28 +164,49 @@ public class FirstLab extends AbstractLab {
 
         @Override
         public void initHandler() {
-            NGramStorage        storage   = new NGramMapStorage(NGram.NGramType.BI_GRAM);
-            CommonStatistic     statistic = new CommonStatistic();
-            DetectorProvider    provider  = new DetectorProvider(storage, statistic);
+            NGramStorage        storage     = new NGramMapStorage(NGram.NGramType.BI_GRAM);
+            NGramStorage        testStorage = new NGramMapStorage(NGram.NGramType.BI_GRAM);
+            DetectorProvider    provider    = new DetectorProvider(storage, statistic);
 
             if (detectors.size() == 0) {
                 detectors.add(new LikeHoodCollocationDetector());
+                testDetectors.add(new LikeHoodCollocationDetector());
                 detectors.add(new PoissonDetector());
+                testDetectors.add(new PoissonDetector());
                 detectors.add(new TTestCollocationDetector());
+                testDetectors.add(new TTestCollocationDetector());
             }
+
+            int index = 0;
 
             for (CollocationDetector detector : detectors) {
                 detector.setStatistic(statistic);
                 detector.setStorage(storage);
+                testDetectors.get(index).setStatistic(statistic);
+                testDetectors.get(index).setStorage(testStorage);
+                index++;
             }
-            processor = new NGramProcessor(statistic, new NGramFactory(storage), 2);
+            processor     = new NGramProcessor(statistic, new NGramFactory(storage),     2);
+            testProcessor = new NGramProcessor(statistic, new NGramFactory(testStorage), 2);
             LinguaUtil.setStatistic(statistic);
         }
 
         @Override
         public synchronized void handle(List<String> tokens) {
             try {
-                processor.addNGrams(tokens);
+                statistic.setParameter("wordcount",
+                        (int) statistic.getParameter("wordcount") + tokens.size());
+
+                if (LinguaUtil.isPrecisionRank()) {
+                    if ((int) statistic.getParameter("wordcount") > (int) statistic.getParameter("wordtreshold")) {
+                        testProcessor.addNGrams(tokens);
+                    }
+                    else {
+                        processor.addNGrams(tokens);
+                    }
+                } else {
+                    processor.addNGrams(tokens);
+                }
             } catch (UnsupposedTypeException e) {
                 e.printStackTrace();
                 logger.error(e);
@@ -163,6 +216,9 @@ public class FirstLab extends AbstractLab {
         @Override
         public void flushHandler() {
             for (CollocationDetector detector : detectors) {
+                detector.detect();
+            }
+            for (CollocationDetector detector : testDetectors) {
                 detector.detect();
             }
         }

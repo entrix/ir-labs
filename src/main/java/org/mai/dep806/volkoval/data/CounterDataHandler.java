@@ -35,4 +35,8 @@ public class CounterDataHandler implements DataHandler {
     public void flushHandler() throws UnsupposedArgumentException, UnsupposedTypeException {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    public void toZero() {
+        counts = 0;
+    }
 }

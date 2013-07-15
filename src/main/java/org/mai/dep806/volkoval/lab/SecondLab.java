@@ -6,13 +6,12 @@ import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
-import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
-import org.mai.dep806.volkoval.linguistic.ngram.*;
+import org.mai.dep806.volkoval.linguistic.ngram.NGram;
+import org.mai.dep806.volkoval.linguistic.ngram.Word;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -49,15 +48,19 @@ public class SecondLab extends AbstractLab {
             System.out.println("-------------------------------------------------------------------------------------" +
                     "------------------------------------------------------------------------------------------------");
             System.out.println("model: " + model.getName());
-            for (int r = 1; r < freq; ++r) {
+            System.out.println("-------------------------------------------------------------------------------------" +
+                    "------------------------------------------------------------------------------------------------");
+            System.out.println("cross entropy: " + model.crossEntropy());
 
-                // value
-                System.out.printf("r = %2d: f = %-7s ", r, String.format("%5.2f", model.f(r)));
-                model.getProbability(Arrays.asList(new String[]{"которой", "каждый"}), "воин");
-//                System.out.printf("| %5s ", model.getNr(r));
-//                System.out.printf("| %5s ", model.getTr(r));
-                System.out.println();
-            }
+//            for (int r = 1; r < freq; ++r) {
+//
+//                // value
+//                System.out.printf("r = %2d: f = %-7s ", r, String.format("%5.2f", model.f(r)));
+//                model.getProbability(Arrays.asList(new String[]{"которой", "каждый"}), "воин");
+////                System.out.printf("| %5s ", model.getNr(r));
+////                System.out.printf("| %5s ", model.getTr(r));
+//                System.out.println();
+//            }
             NGramProbabilityEstimator estimator = model.getEstimators().get(1);
             for (NGram nGram : estimator.getValidationStorage().getAllNGrams()) {
                 List<Word> words = nGram.getWords();

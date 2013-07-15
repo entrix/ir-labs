@@ -96,7 +96,53 @@ public class HeldOutNGramModel implements NGramModel {
             }
         }
 
-        return numerProbability / denomProbability;
+        return numerProbability / (denomProbability == 0 ?
+                1.0 : denomProbability);
+    }
+
+    @Override
+    public double crossEntropy() throws UnsupposedArgumentException, UnsupposedTypeException {
+
+        int iter = 0;
+        int nGramLimit = 1000;
+        int n = 0;
+        double val = 0.0;
+        NGramProbabilityEstimator baseEstimator = null;
+        NGramProbabilityEstimator nextEstimator;
+        NGram.NGramType type = nGramBaseType;
+        List<Word> words = new ArrayList<>();
+
+        for (Word word : getWordStorage().getAllWords()) {
+            if (iter == 100) {
+                break;
+            }
+            words.add(word);
+            iter++;
+        }
+        for (int i = 0; i < nGramProbabilityEstimators.size(); ++i) {
+            if (nGramProbabilityEstimators.get(i).getTrainStorage().getNGramType() == nGramBaseType) {
+                baseEstimator = nGramProbabilityEstimators.get(i);
+                nextEstimator = nGramProbabilityEstimators.get(i + 1);
+                n = nextEstimator.getTrainStorage().getNGramCount();
+            }
+        }
+
+        for (NGram nGram : baseEstimator.getTrainStorage().getAllNGrams()) {
+            if (nGramLimit == 0) {
+                break;
+            }
+            for (Word word : words) {
+                List<String> list = new ArrayList<>();
+
+                for (Word w : nGram.getWords()) {
+                    list.add(w.getName());
+                }
+                val += Math.log(getProbability(list, word.getName())) / n;
+            }
+            nGramLimit--;
+        }
+
+        return -val;
     }
 
     @Override

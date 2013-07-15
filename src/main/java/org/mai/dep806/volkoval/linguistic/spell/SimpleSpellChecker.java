@@ -4,9 +4,6 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
-import org.mai.dep806.volkoval.linguistic.ngram.NGramUtil;
-import org.mai.dep806.volkoval.linguistic.ngram.Word;
-import org.mai.dep806.volkoval.linguistic.ngram.WordStorage;
 
 import java.util.ArrayList;
 import java.util.List;

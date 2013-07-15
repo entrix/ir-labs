@@ -5,7 +5,6 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
-import org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,33 +39,33 @@ public class NGramProcessor {
     }
 
     public NGramProcessor(CommonStatistic statistic, NGram.NGramType nGramType) {
-        this.nGramType  = nGramType;
-        this.windowSize = nGramType.ordinal();
-        this.statistic  = statistic;
-        nGramFactory    = new NGramFactory(new NGramMapStorage(nGramType));
+        this.nGramType          = nGramType;
+        this.windowSize         = nGramType.ordinal();
+        this.statistic          = statistic;
+        nGramFactory            = new NGramFactory(new NGramMapStorage(nGramType));
     }
 
     public NGramProcessor(CommonStatistic statistic, NGram.NGramType nGramType, int windowSize) {
-        this.nGramType = nGramType;
-        this.statistic = statistic;
-        this.windowSize = windowSize >= 2 ?
-            windowSize : 2;
-        nGramFactory = new NGramFactory(new NGramMapStorage(nGramType));
+        this.nGramType          = nGramType;
+        this.statistic          = statistic;
+        this.windowSize         = windowSize >= 2 ?
+                                windowSize : 2;
+        nGramFactory            = new NGramFactory(new NGramMapStorage(nGramType));
     }
 
     public NGramProcessor(CommonStatistic statistic, NGramFactory nGramFactory) {
-        this.nGramFactory = nGramFactory;
-        this.statistic  = statistic;
-        this.nGramType  = nGramFactory.getStorage().getNGramType();
-        this.windowSize = nGramType.ordinal();
+        this.nGramFactory       = nGramFactory;
+        this.statistic          = statistic;
+        this.nGramType          = nGramFactory.getStorage().getNGramType();
+        this.windowSize         = nGramType.ordinal();
     }
 
     public NGramProcessor(CommonStatistic statistic, NGramFactory nGramFactory, int windowSize) {
-        this.nGramFactory = nGramFactory;
-        this.statistic    = statistic;
-        this.windowSize   = windowSize >= 2 ?
-                2 : windowSize;
-        this.nGramType    = nGramFactory.getStorage().getNGramType();
+        this.nGramFactory       = nGramFactory;
+        this.statistic          = statistic;
+        this.windowSize         = windowSize >= 3 ?
+                                3 : windowSize;
+        this.nGramType          = nGramFactory.getStorage().getNGramType();
     }
 
     public boolean isNormalize() {
@@ -95,49 +94,48 @@ public class NGramProcessor {
     }
 
     public void addNGrams(List<String> tokens) throws UnsupposedTypeException {
-            int cursor = 0;
+        int cursor = 0;
 
-            if (tokens.size() < NGramUtil.getLengthByType(nGramType)) {
-                return;
-            }
-
-            while (cursor < tokens.size())  {
-                List<String> subTokens = tokens.subList(cursor,
-                        cursor + windowSize >= tokens.size() ?
+        if (tokens.size() < NGramUtil.getLengthByType(nGramType)) {
+            return;
+        }
+        while (cursor < tokens.size())  {
+            List<String> subTokens = tokens.subList(cursor,
+                    cursor + windowSize >= tokens.size() ?
                             tokens.size() : cursor + windowSize);
 
-                if (windowSize > 1) {
-                    cursor += 1;
-                }
-                else {
-                    cursor++;
-                }
+            if (windowSize > 1) {
+                cursor += 1;
+            }
+            else {
+                cursor++;
+            }
 
-                try {
-                    for (List<String> names : NGramUtil.groupWords(subTokens, nGramType)) {
-                        if (normalize) {
-                            NGram nGram;
-                            List<String> normalizedNames = new ArrayList<>();
+            try {
+                for (List<String> names : NGramUtil.groupWords(subTokens, nGramType)) {
+                    if (normalize) {
+                        NGram nGram;
+                        List<String> normalizedNames = new ArrayList<>();
 
-                            for (String name : names) {
-                                normalizedNames.add(LinguaUtil.getRussianNormalForm(name));
-                            }
-                            nGram = nGramFactory.addNGram(normalizedNames);
-                            nGram.addSynonym(nGramFactory.createNGram(names));
+                        for (String name : names) {
+                            normalizedNames.add(LinguaUtil.getRussianNormalForm(name));
                         }
-                        else {
-//                            if (names.get(0).equals("странный")) {
-                                nGramFactory.addNGram(names);
-//                            }
-                        }
+                        nGram = nGramFactory.addNGram(normalizedNames);
+                        nGram.addSynonym(nGramFactory.createNGram(names));
                     }
+                    else {
+//                            if (names.get(0).equals("странный")) {
+                        nGramFactory.addNGram(names);
+//                            }
+                    }
+                }
             } catch (UnsupposedTypeException e) {
                 logger.error("NGrammProcessor has error underlying nGramType", e);
                 throw new UnsupposedTypeException("NGrammProcessor doesn't work");
             } catch (UnsupposedArgumentException e) {
-                    e.printStackTrace();
-                    logger.error(e);
-                }
+                e.printStackTrace();
+                logger.error(e);
             }
+        }
     }
 }

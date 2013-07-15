@@ -5,12 +5,13 @@ import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.data.DataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
-import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
+import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ner.LEXRetriever;
 import org.mai.dep806.volkoval.linguistic.ner.MWU;
-import org.mai.dep806.volkoval.linguistic.ngram.*;
+import org.mai.dep806.volkoval.linguistic.ngram.NGram;
+import org.mai.dep806.volkoval.linguistic.ngram.WordMapStorage;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +38,10 @@ public class ThirdLab extends AbstractLab {
 
     private InputMode mode = InputMode.TRAIN;
 
-    private Set<MWU> properNames = new HashSet<>();
+    private Set<MWU> properNames     = new HashSet<>();
+
+    private Set<MWU> testProperNames = new HashSet<>();
+
 
     @Override
     public void setDataRetriever(DataRetriever dataRetriever) {
@@ -76,6 +80,15 @@ public class ThirdLab extends AbstractLab {
         int iter = 0;
 
         System.out.println("Result: ");
+
+        Set<MWU> tParamNames = new HashSet(properNames);
+
+        tParamNames.retainAll(testProperNames);
+        System.out.println("--------------------------------------------" +
+                "--------------------------------------------------");
+        System.out.println("completeness: " + (double) tParamNames.size() / testProperNames.size());
+        System.out.println("--------------------------------------------" +
+                "--------------------------------------------------");
 
         for (MWU mwu : properNames) {
             if (iter == top) {
@@ -123,6 +136,17 @@ public class ThirdLab extends AbstractLab {
         @Override
         public synchronized void handle(List<String> tokens) {
             try {
+                if (mode == ThirdLab.InputMode.PROPER_NAME) {
+                    statistic.setParameter("wordcount",
+                            (int) statistic.getParameter("wordcount") + tokens.size());
+
+                    if (LinguaUtil.isPrecisionRank() && mode != InputMode.TEST) {
+                        if ((int) statistic.getParameter("wordcount") > (int) statistic.getParameter("wordtreshold")) {
+                            mode = InputMode.TEST;
+                        }
+                    }
+                }
+
                 switch (mode) {
                     case TRAIN:
                         gramProbabilityEstimator.addToTrain(tokens);
@@ -136,6 +160,9 @@ public class ThirdLab extends AbstractLab {
                         break;
                     case PROPER_NAME:
                         properNames.addAll(retriever.retrieveProperNames(tokens));
+                        break;
+                    case TEST:
+                        testProperNames.addAll(retriever.retrieveProperNames(tokens));
                         break;
                 }
             } catch (UnsupposedTypeException e) {
@@ -157,6 +184,6 @@ public class ThirdLab extends AbstractLab {
     }
 
     public static enum InputMode {
-        TRAIN, VALIDATION, PROPER_NAME;
+        TRAIN, VALIDATION, PROPER_NAME, TEST;
     }
 }

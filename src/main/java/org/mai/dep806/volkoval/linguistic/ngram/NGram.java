@@ -4,9 +4,7 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,6 +22,8 @@ public class NGram {
     private int count;
 
     private NGramType type;
+
+    private List<NGram> next = new ArrayList<>();
 
 
     protected NGram() {
@@ -123,6 +123,14 @@ public class NGram {
         }
 
         return true;
+    }
+
+    public List<NGram> getNext() {
+        return next;
+    }
+
+    public void setNext(List<NGram> next) {
+        this.next = next;
     }
 
     public static int getNGramTypeLength(NGramType type) {

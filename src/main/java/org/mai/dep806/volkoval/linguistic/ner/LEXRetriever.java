@@ -1,29 +1,21 @@
 package org.mai.dep806.volkoval.linguistic.ner;
 
-import org.mai.dep806.volkoval.StringUtil;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
+import org.mai.dep806.volkoval.StringUtil;
 import org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector;
+import org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector.NGramSortUnit;
 import org.mai.dep806.volkoval.linguistic.collocation.LikeHoodCollocationDetector;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
-import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
-import org.mai.dep806.volkoval.linguistic.ngram.NGramMapStorage;
-import org.mai.dep806.volkoval.linguistic.ngram.NGramStorage;
-import org.mai.dep806.volkoval.linguistic.ngram.WordStorage;
+import org.mai.dep806.volkoval.linguistic.spell.LDDNGramWordLinker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
-
-import org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector.NGramSortUnit;
-import org.mai.dep806.volkoval.linguistic.spell.LDDNGramWordLinker;
-
-import static org.mai.dep806.volkoval.linguistic.collocation.CollocationDetector.NGramSortUnit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -215,8 +207,8 @@ public class LEXRetriever {
         for (int k = 0; k < upperSeqs.size(); ++k) {
             List<String> seq = upperSeqs.get(k);
             for (int i = 0; i < seq.size(); ++i) {
-                if (stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(i))) ||
-                    stopWords.contains(seq.get(i).toLowerCase())) {
+                if (LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(i))) ||
+                    LinguaUtil.stopWords.contains(seq.get(i).toLowerCase())) {
 
                     if (i + 2 < seq.size() &&
                             Character.isUpperCase(seq.get(i).charAt(0)) &&
@@ -266,8 +258,8 @@ public class LEXRetriever {
 //                    }
                     for (int i = 0; i < seq.size(); i += step) {
 
-                        if (stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(0))) ||
-                                stopWords.contains(seq.get(0))) {
+                        if (LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(seq.get(0))) ||
+                                LinguaUtil.stopWords.contains(seq.get(0))) {
                             truthSeqOne = false;
                         }
 
@@ -278,8 +270,8 @@ public class LEXRetriever {
                                 if (first.equals(subSeq.get(0))) {
                                     truthSeqOne = false;
                                 }
-                                if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
-                                    stopWords.contains(subSeq.get(0))) {
+                                if (LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
+                                    LinguaUtil.stopWords.contains(subSeq.get(0))) {
                                     truthSeqOne = false;
                                 }
 
@@ -287,10 +279,10 @@ public class LEXRetriever {
                                         linker.getEquivFreq(subSeq.get(0)) > 0.000000001;
                             }
                             else if (step == 2) {
-                                if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
-                                        stopWords.contains(subSeq.get(0)) ||
-                                        stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(1))) ||
-                                        stopWords.contains(subSeq.get(1))) {
+                                if (LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(0))) ||
+                                        LinguaUtil.stopWords.contains(subSeq.get(0)) ||
+                                        LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(1))) ||
+                                        LinguaUtil.stopWords.contains(subSeq.get(1))) {
                                     truthSeqOne = false;
                                 }
 
@@ -306,10 +298,10 @@ public class LEXRetriever {
                             }
                             else if (step > 2 && subSeq.size() > 2) {
                                 for (int j = 0; j < subSeq.size() - 2; ++j) {
-                                    if (stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j))) ||
-                                            stopWords.contains(subSeq.get(j)) ||
-                                            stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j + 2))) ||
-                                            stopWords.contains(subSeq.get(j + 2))) {
+                                    if (LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j))) ||
+                                            LinguaUtil.stopWords.contains(subSeq.get(j)) ||
+                                            LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(subSeq.get(j + 2))) ||
+                                            LinguaUtil.stopWords.contains(subSeq.get(j + 2))) {
                                         truthSeqTwo = false;
                                     }
 
@@ -488,53 +480,4 @@ public class LEXRetriever {
 
         return average / number;
     }
-
-    private final List<String> stopWords = StringUtil.asList(new String[] {
-            "-",	"еще",	"него",	"сказать",
-            "а",	"ж",	"нее",	"со",
-            "без",	"же",	"ней",	"совсем",
-            "более",	"жизнь",	"нельзя",	"так",
-            "больше",	"за",	"нет",	"такой",
-            "будет",	"зачем",	"ни",	"там",
-            "будто",	"здесь",	"нибудь",	"тебя",
-            "бы",	"и",	"никогда",	"тем",
-            "был",	"из",	"ним",	"теперь",
-            "была",	"из-за",	"них",	"то",
-            "были",	"или",	"ничего",	"тогда",
-            "было",	"им",	"но",	"того",
-            "быть",	"иногда",	"ну",	"тоже",
-            "в",	"их",	"о",	"только",
-            "вам",	"к",	"об",	"том",
-            "вас",	"кажется",	"один",	"тот",
-            "вдруг",	"как",	"он",	"три",
-            "ведь",	"какая",	"она",	"тут",
-            "во",	"какой",	"они",	"ты",
-            "вот",	"когда",	"опять",	"у",
-            "впрочем",	"конечно",	"от",	"уж",
-            "все",	"которого",	"перед",	"уже",
-            "всегда",	"которые",	"по",	"хорошо",
-            "всего",	"кто",	"под",	"хоть",
-            "всех",	"куда",	"после",	"чего",
-            "всю",	"ли",	"потом",	"человек",
-            "вы",	"лучше",	"потому",	"чем",
-            "г",	"между",	"почти",	"через",
-            "где",	"меня",	"при",	"что",
-            "говорил",	"мне",	"про",	"чтоб",
-            "да",	"много",	"раз",	"чтобы",
-            "даже",	"может",	"разве",	"чуть",
-            "два",	"можно",	"с",	"эти",
-            "для",	"мой",	"сам",	"этого",
-            "до",	"моя",	"свое",	"этой",
-            "другой",	"мы",	"свою",	"этом",
-            "его",	"на",	"себе",	"этот",
-            "ее",	"над",	"себя",	"эту",
-            "ей",	"надо",	"сегодня",	"я",
-            "ему",	"наконец",	"сейчас",
-            "если",	"нас",	"сказал",
-            "есть",	"не",	"сказала",
-            "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "к", "л", "м", "н",
-            "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "э", "ь", "ы", "ю", "я",
-            ".",",","-", "_", "=", "+", "/","!", "\"", ";",":", "%","?", "*", "(", ")",
-            "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "ноль"
-    });
 }

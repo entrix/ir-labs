@@ -21,7 +21,10 @@ public interface NGramModel {
 
     public void addNGrams(List<String> tokens) throws UnsupposedTypeException;
 
-    public double getProbability(List<String> prev, String next) throws UnsupposedTypeException, UnsupposedArgumentException;
+    public double getProbability(List<String> prev, String next)
+            throws UnsupposedTypeException, UnsupposedArgumentException;
+
+    public double crossEntropy() throws UnsupposedArgumentException, UnsupposedTypeException;
 
     public void refreshStatistics() throws UnsupposedArgumentException, UnsupposedTypeException;
 

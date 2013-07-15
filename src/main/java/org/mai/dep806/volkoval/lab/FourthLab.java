@@ -7,16 +7,12 @@ import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
-import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
-import org.mai.dep806.volkoval.linguistic.model.NGramProbabilityEstimator;
 import org.mai.dep806.volkoval.linguistic.ngram.NGram;
-import org.mai.dep806.volkoval.linguistic.ngram.Word;
 import org.mai.dep806.volkoval.linguistic.spell.SimpleSpellChecker;
 import org.mai.dep806.volkoval.linguistic.spell.SpellChecker;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -43,7 +39,7 @@ public class FourthLab extends AbstractLab {
     }
     @Override
     public String getLabName() {
-        return "Second Lab";
+        return "Fourth Lab";
     }
 
     @Override

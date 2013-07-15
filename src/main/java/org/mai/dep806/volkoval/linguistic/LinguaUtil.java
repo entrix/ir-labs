@@ -7,12 +7,10 @@ import org.apache.lucene.morphology.russian.RussianAnalyzer;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.util.Version;
+import org.mai.dep806.volkoval.StringUtil;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -22,12 +20,15 @@ import java.util.regex.Pattern;
  * Time: 12:47
  * To change this template use File | Settings | File Templates.
  */
-public class LinguaUtil {
+public class    LinguaUtil {
 
     private static Logger logger = LogManager.getLogger(LinguaUtil.class);
 
+    private static Random random = new Random(System.currentTimeMillis());
+
+
     private static Pattern punctuationPattern =
-            Pattern.compile("[\\\"\\'\\`\\,\\:\\;\\(\\)\\[\\]\\{\\}\\@\\#\\$\\%\\^\\&\\*\\=\\+]");
+            Pattern.compile("[\\r\\n\\t\\\"\\'\\`\\,\\:\\;\\(\\)\\[\\]\\{\\}\\@\\#\\$\\%\\^\\&\\*\\=\\+]");
     private static String normalFormPattern = "\\|";
     private static String whiteSpacePattern = "\\ +";
     private static String parserDelimiterPattern = ":";
@@ -113,19 +114,26 @@ public class LinguaUtil {
         StringBuilder builder = new StringBuilder();
         List<String> items = new ArrayList<>();
 
-
         for (int i = 0; i < ch.length; ++i) {
 
-            if (!isCyrillic(ch[i])) {
-                while (i < ch.length && ch[i] != '.' && ch[i] != '?' && ch[i] != '!' && ch[i] != ' ') {
-                    i++;
-                }
+//            if (!isCyrillic(ch[i]) ) {
+//                while (i < ch.length && ch[i] != '.' && ch[i] != '?' && ch[i] != '!' && ch[i] != ' ') {
+//                    i++;
+//                }
 
                 if (i == ch.length) {
                     return sentences;
                 }
+//            }
+
+            if (Character.isUpperCase(ch[i])) {
+                ch[i] = Character.toLowerCase(ch[i]);
             }
             if (ch[i] != '.' && ch[i] != '?' && ch[i] != '!') {
+                builder.append(ch[i]);
+            }
+            else if (Character.isUpperCase(ch[i + 1]) || Character.isUpperCase(ch[i + 2]) ||
+                    Character.isUpperCase(ch[i + 3]) && random.nextBoolean()) {
                 builder.append(ch[i]);
             }
             else {
@@ -153,9 +161,14 @@ public class LinguaUtil {
     }
 
     public static String getRussianNormalForm(String word) {
+        String normalForm = word;
 
-        String normalForm = luceneMorph.getMorphInfo(word.toLowerCase()).get(0).split(normalFormPattern)[0];
-
+        try {
+            normalForm = luceneMorph.getMorphInfo(word.toLowerCase()).get(0).split(normalFormPattern)[0];
+        }
+        catch (Exception e) {
+            // do nothing
+        }
 //        try {
 //            normalForm = russianParser.parse(normalForm).toString().split(parserDelimiterPattern)[1];
 //        } catch (ParseException e) {
@@ -228,4 +241,53 @@ public class LinguaUtil {
 
         return disSet;
     }
+
+    public static final List<String> stopWords = StringUtil.asList(new String[]{
+            "-", "еще", "него", "сказать",
+            "а", "ж", "нее", "со",
+            "без", "же", "ней", "совсем",
+            "более", "жизнь", "нельзя", "так",
+            "больше", "за", "нет", "такой",
+            "будет", "зачем", "ни", "там",
+            "будто", "здесь", "нибудь", "тебя",
+            "бы", "и", "никогда", "тем",
+            "был", "из", "ним", "теперь",
+            "была", "из-за", "них", "то",
+            "были", "или", "ничего", "тогда",
+            "было", "им", "но", "того",
+            "быть", "иногда", "ну", "тоже",
+            "в", "их", "о", "только",
+            "вам", "к", "об", "том",
+            "вас", "кажется", "один", "тот",
+            "вдруг", "как", "он", "три",
+            "ведь", "какая", "она", "тут",
+            "во", "какой", "они", "ты",
+            "вот", "когда", "опять", "у",
+            "впрочем", "конечно", "от", "уж",
+            "все", "которого", "перед", "уже",
+            "всегда", "которые", "по", "хорошо",
+            "всего", "кто", "под", "хоть",
+            "всех", "куда", "после", "чего",
+            "всю", "ли", "потом", "человек",
+            "вы", "лучше", "потому", "чем",
+            "г", "между", "почти", "через",
+            "где", "меня", "при", "что",
+            "говорил", "мне", "про", "чтоб",
+            "да", "много", "раз", "чтобы",
+            "даже", "может", "разве", "чуть",
+            "два", "можно", "с", "эти",
+            "для", "мой", "сам", "этого",
+            "до", "моя", "свое", "этой",
+            "другой", "мы", "свою", "этом",
+            "его", "на", "себе", "этот",
+            "ее", "над", "себя", "эту",
+            "ей", "надо", "сегодня", "я",
+            "ему", "наконец", "сейчас",
+            "если", "нас", "сказал",
+            "есть", "не", "сказала",
+            "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "к", "л", "м", "н",
+            "о", "п", "р", "с", "т", "у", "ф", "х", "ц", "ч", "ш", "щ", "э", "ь", "ы", "ю", "я",
+            ".", ",", "-", "_", "=", "+", "/", "!", "\"", ";", ":", "%", "?", "*", "(", ")",
+            "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять", "ноль",
+    });
 }

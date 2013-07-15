@@ -9,6 +9,7 @@ import org.mai.dep806.volkoval.data.SIngleThreadDataRetriever;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 import org.mai.dep806.volkoval.lab.*;
+import org.mai.dep806.volkoval.linguistic.CommonStatistic;
 import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 import org.mai.dep806.volkoval.linguistic.model.HeldOutNGramModel;
 import org.mai.dep806.volkoval.linguistic.model.NGramModel;
@@ -131,21 +132,22 @@ public class Labs {
                 double precisionRank = 1.0;
                 HashMap<String, Integer> wordCounts = new HashMap<>();
 
-                if (argsMap.containsKey("precisionrank")) {
+                CommonStatistic statistic = new CommonStatistic();
+
+                if (argsMap.containsKey("precisionrank") && labNumber != 3) {
                     LinguaUtil.setPrecisionRank(true);
-                    precisionRank = Double.valueOf(argsMap.get("detector").get(0));
+                    precisionRank = Double.valueOf(argsMap.get("precisionrank").get(0));
 
                     DataHandler counter = new CounterDataHandler();
 
                     retriever.addDataHandler(counter);
                     for (String filename : argsMap.get("file")) {
+                        ((CounterDataHandler) counter).toZero();
                         xmlReader.parse(convertToFileURL(filename));
                         wordCounts.put(filename,
                                 (int) (((CounterDataHandler) counter).getCounts() * precisionRank));
                     }
                 }
-
-
 
                 lab.setDataRetriever(retriever);
 
@@ -233,9 +235,27 @@ public class Labs {
                     else {
                         logger.info("filename to validation: " + filename);
                     }
+                    statistic = new CommonStatistic();
+                    statistic.setParameter("wordtreshold", wordCounts.get(filename));
+                    lab.setStatistic(statistic);
                     xmlReader.parse(convertToFileURL(filename));
                     iter++;
                 }
+
+                if (argsMap.containsKey("precisionrank") && labNumber == 3) {
+                    LinguaUtil.setPrecisionRank(true);
+                    precisionRank = Double.valueOf(argsMap.get("precisionrank").get(0));
+
+                    DataHandler counter = new CounterDataHandler();
+
+                    retriever.addDataHandler(counter);
+                    for (String filename : argsMap.get("pnamefile")) {
+                        xmlReader.parse(convertToFileURL(filename));
+                        wordCounts.put(filename,
+                                (int) (((CounterDataHandler) counter).getCounts() * precisionRank));
+                    }
+                }
+
                 if (labNumber == 3) {
                     ((ThirdLab) lab).setMode(ThirdLab.InputMode.PROPER_NAME);
                     if (labNumber == 3) {
@@ -248,6 +268,9 @@ public class Labs {
                     }
                     for (String filename : argsMap.get("pnamefile")) {
                         logger.info("filename to proper name extraction: " + filename);
+                        statistic = new CommonStatistic();
+                        statistic.setParameter("wordtreshold", wordCounts.get(filename));
+                        lab.setStatistic(statistic);
                         xmlReader.parse(convertToFileURL(filename));
                     }
                 }

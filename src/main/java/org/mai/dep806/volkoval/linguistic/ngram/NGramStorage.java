@@ -5,7 +5,6 @@ import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -41,4 +40,6 @@ public interface NGramStorage {
     void setWordStorage(WordStorage wordStorage);
 
     NGram addNGram(NGram nGram);
+
+    double intersect(NGramStorage externStorage) throws UnsupposedArgumentException, UnsupposedTypeException;
 }

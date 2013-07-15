@@ -84,9 +84,19 @@ public class SIngleThreadDataRetriever extends DataRetriever implements ContentH
         List<List<String>> sentences = LinguaUtil.toSentences(Arrays.copyOfRange(ch, start, start + length));
 
         for (List<String> sentence : sentences) {
+
+            List<String> trueSentence = new ArrayList<>();
+
+            for (String word : sentence) {
+                if (!LinguaUtil.stopWords.contains(word.toLowerCase())
+                        && !LinguaUtil.stopWords.contains(LinguaUtil.getRussianNormalForm(word).toLowerCase())) {
+                    trueSentence.add(word);
+                }
+            }
+
             if (sentence.size() > 1) {
                 for (DataHandler handler : handlers) {
-                    handler.handle(sentence);
+                    handler.handle(trueSentence);
                 }
             }
         }
