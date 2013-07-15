@@ -3,9 +3,7 @@ package org.mai.dep806.volkoval.linguistic.experimental;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -16,12 +14,12 @@ import java.util.List;
  */
 public class SimpleNGram {
 
-    private int               count;
-    private NGramType         type;
-    private PositionFlag      flag;
-    private List<String>      words;
-    private List<SimpleNGram> next     = new ArrayList<>();
-    private List<SimpleNGram> synonyms = new ArrayList<>();
+    private int                        count;
+    private NGramType                  type;
+    private Map<PositionFlag, Integer> flags    = new HashMap<>();
+    private List<String>               words;
+    private List<SimpleNGram>          next     = new ArrayList<>();
+    private List<SimpleNGram>          synonyms = new ArrayList<>();
 
 
     protected SimpleNGram() {
@@ -41,7 +39,10 @@ public class SimpleNGram {
     public SimpleNGram(List<String> words, int count, PositionFlag flag) throws UnsupposedArgumentException, UnsupposedTypeException {
         this.words = new ArrayList<>(words);
         this.count = count;
-        this.flag = flag;
+        this.flags.put(PositionFlag.START, 0);
+        this.flags.put(PositionFlag.USUAL, 0);
+        this.flags.put(PositionFlag.END, 0);
+//        addFlag(flag);
         type = NGramUtil.getTypeByLength(words.size());
     }
 
@@ -150,12 +151,20 @@ public class SimpleNGram {
         }
     }
 
-    public PositionFlag getFlag() {
-        return flag;
+    public List<PositionFlag> getFlags() {
+        List<PositionFlag> flagList = new ArrayList<>();
+
+        for (PositionFlag flag : flags.keySet()) {
+            if (flags.get(flag) > 0) {
+                flagList.add(flag);
+            }
+        }
+
+        return flagList;
     }
 
-    public void setFlag(PositionFlag flag) {
-        this.flag = flag;
+    public void addFlag(PositionFlag flag) {
+            flags.put(flag, flags.get(flag) + 1);
     }
 
     public static enum NGramType {
@@ -164,5 +173,9 @@ public class SimpleNGram {
 
     public static enum PositionFlag {
         START, USUAL, END
+    }
+
+    public Map<PositionFlag, Integer> getFlagsWithFreq() {
+        return flags;
     }
 }

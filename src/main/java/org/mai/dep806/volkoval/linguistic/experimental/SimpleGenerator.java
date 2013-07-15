@@ -3,7 +3,6 @@ package org.mai.dep806.volkoval.linguistic.experimental;
 import org.apache.logging.log4j.Logger;
 import org.mai.dep806.volkoval.exception.UnsupposedArgumentException;
 import org.mai.dep806.volkoval.exception.UnsupposedTypeException;
-import org.mai.dep806.volkoval.linguistic.LinguaUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -65,13 +64,19 @@ public class SimpleGenerator {
             iterator = startNGramList.get(startNGramList.indexOf(new SimpleNGram(startToken)));
         }
         else {
-            int start = Math.abs(random.nextInt()) % startNGramList.size();
+            while (true) {
+                int start = Math.abs(random.nextInt()) % startNGramList.size();
 
-            iterator = startNGramList.get(start);
+                iterator = startNGramList.get(start);
+
+                if (iterator.getNext().size() > 0) {
+                    break;
+                }
+            }
         }
 
 
-        while (iterator.getFlag() != SimpleNGram.PositionFlag.END) {
+        while (!iterator.getFlags().contains(SimpleNGram.PositionFlag.END)) {
             iterator = getNextByDistribution(iterator, false);
             result.addAll(iterator.getWords());
         }
@@ -87,31 +92,87 @@ public class SimpleGenerator {
         List<String> result = new ArrayList<>();
         SimpleNGram iterator;
         int counter = 0;
+        boolean finish = false;
 
         if (!startToken.isEmpty() && startNGramList.contains(new SimpleNGram(startToken))) {
             iterator = startNGramList.get(startNGramList.indexOf(new SimpleNGram(startToken)));
         }
         else {
-            int start = Math.abs(random.nextInt()) % startNGramList.size();
+            while (true) {
+                int start = Math.abs(random.nextInt()) % startNGramList.size();
 
-            iterator = startNGramList.get(start);
-        }
+                iterator = startNGramList.get(start);
 
-        while (iterator.getFlag() != SimpleNGram.PositionFlag.END) {
-            iterator = getNextByDistribution(iterator, true);
-            result.addAll(iterator.getWords());
-            counter++;
-
-            if (counter > 3 && iterator.getWords().get(iterator.getWords().size() - 1).length() >= 3) {
-                int diff = 10 - (counter - 3) * 2;
-
-                diff = (diff < 0) ?
-                        0 : diff;
-                if (diff == 0 || random.nextInt() % diff == 0) {
+                if (iterator.getNext().size() > 0) {
                     break;
                 }
             }
         }
+
+//        if (iterator.getFlags().contains(SimpleNGram.PositionFlag.END)) {
+//            int usual = iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.USUAL);
+//            int end   = iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.END);
+//
+//            if (usual > 0) {
+//                if(Math.abs(random.nextInt()) % (usual + end) >= usual) {
+//                    finish = true;
+//                }
+//            }
+//            else {
+//                finish = true;
+//            }
+//        }
+        if (iterator.getWords().get(0).equals("сети")) {
+            System.out.print("sdsd");
+        }
+        if (iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.USUAL) == 0) {
+            finish = true;
+        }
+
+        while (!finish) {
+            result.addAll(iterator.getWords());
+            iterator = getNextByDistribution(iterator, true);
+            counter++;
+
+            if (iterator.getNext().size() == 0) {
+                System.out.print("");
+            }
+            if (iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.USUAL) > 0 &&
+                    iterator.hashCode() == iterator.getNext().get(0).hashCode()) {
+                break;
+            }
+
+            if (counter > 2 && iterator.getWords().get(iterator.getWords().size() - 1).length() >= 3) {
+                int diff = 10 - (counter) * 3;
+
+                diff = (diff < 0) ?
+                        0 : diff;
+                if (diff == 0 || random.nextInt() % diff < 2) {
+                    break;
+                }
+            }
+            if (iterator.getWords().get(0).equals("сети")) {
+                System.out.print("");
+            }
+
+            if (iterator.getFlags().contains(SimpleNGram.PositionFlag.END)) {
+                int usual = iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.USUAL);
+                int end   = iterator.getFlagsWithFreq().get(SimpleNGram.PositionFlag.END);
+
+                if (usual > 0) {
+                    if (iterator.getWords().get(iterator.getWords().size() - 1).length() >= 3) {
+                        if(Math.abs(random.nextInt()) % Math.abs(usual + end) >= Math.abs(usual)) {
+                            finish = true;
+                        }
+                    }
+                }
+                else {
+                    finish = true;
+                }
+            }
+        }
+
+        result.addAll(iterator.getWords());
 
         return result;
     }
@@ -132,10 +193,10 @@ public class SimpleGenerator {
         int freqSum = 0;
 
         for (SimpleNGram next : nextNGrams) {
-            System.out.println("next = " + next);
-            System.out.println(LinguaUtil.getRussianForm(next.getWords().get(0)));
+//            System.out.println("next = " + next);
+//            System.out.println(LinguaUtil.getRussianForm(next.getWords().get(0)));
 
-            if (isPhrase && next.getFlag() == SimpleNGram.PositionFlag.END) {
+            if (isPhrase && next.getFlags().contains(SimpleNGram.PositionFlag.END)) {
                 freqSum += next.getCount() * 2;
             }
             else {
@@ -144,8 +205,11 @@ public class SimpleGenerator {
             distribution.add(freqSum);
         }
 
-        System.out.println("freq = " + freqSum);
+//        System.out.println("freq = " + freqSum);
 
+        if (freqSum == 0) {
+            System.out.print('d');
+        }
         int nextItem = Math.abs(random.nextInt()) % freqSum;
         int index = 0;
         SimpleNGram result = null;
@@ -176,6 +240,7 @@ public class SimpleGenerator {
     public void addFragment(List<String> tokens) throws UnsupposedTypeException {
         int cursor = 0;
         SimpleNGram prevNGram = null;
+        boolean previousIsFinal = false;
 
         if (tokens.size() < NGramUtil.getLengthByType(nGramType)) {
             return;
@@ -201,7 +266,7 @@ public class SimpleGenerator {
                         nGramMap.get(nGram.hashCode()).add(nGram);
                     }
                     else {
-                        nGram = (SimpleNGram) nGramMap.get(nGram.hashCode()).get(0);
+                        nGram = nGramMap.get(nGram.hashCode()).get(0);
                     }
                     fullCount++;
                     for (String name : names) {
@@ -213,24 +278,36 @@ public class SimpleGenerator {
                         }
                     }
 
+                    if (names.get(0).equals("однако")) {
+                            System.out.print("asd");
+                    }
                     if (cursor == 1) {
-                        nGram.setFlag(SimpleNGram.PositionFlag.START);
+                        nGram.addFlag(SimpleNGram.PositionFlag.START);
                         startNGramList.add(nGram);
+                        prevNGram = nGram;
                     }
                     else {
                         if (cursor == tokens.size()) {
                             if (nGram.getWords().get(nGram.getWords().size() - 1).length() < 3) {
-                                prevNGram.setFlag(SimpleNGram.PositionFlag.END);
-                                prevNGram.setNext(new ArrayList<SimpleNGram>());
+                                prevNGram.addFlag(SimpleNGram.PositionFlag.END);
+                                if (cursor > 2) {
+                                    prevNGram.getFlagsWithFreq().put(SimpleNGram.PositionFlag.USUAL,
+                                            prevNGram.getFlagsWithFreq().get(SimpleNGram.PositionFlag.USUAL) - 1);
+                                }
                                 nGram = prevNGram;
                             }
                             else {
-                                nGram.setFlag(SimpleNGram.PositionFlag.END);
+                                nGram.addFlag(SimpleNGram.PositionFlag.END);
                             }
                         }
-                        prevNGram.getNext().add(nGram);
+                        if (!prevNGram.getNext().contains(nGram) &&
+                                prevNGram.hashCode() != nGram.hashCode()) {
+                            prevNGram.getNext().add(nGram);
+                            prevNGram.addFlag(SimpleNGram.PositionFlag.USUAL);
+                        }
+                        prevNGram = nGram;
                     }
-                    prevNGram = nGram;
+
                 }
             } catch (UnsupposedTypeException e) {
                 logger.error("NGrammProcessor has error underlying nGramType", e);
@@ -240,10 +317,10 @@ public class SimpleGenerator {
                 logger.error(e);
             }
         }
-        prevNGram.setFlag(SimpleNGram.PositionFlag.END);
-        if (startNGramList.contains(prevNGram)) {
-            startNGramList.remove(prevNGram);
-        }
+//        prevNGram.addFlag(SimpleNGram.PositionFlag.END);
+//        if (startNGramList.contains(prevNGram)) {
+//            startNGramList.remove(prevNGram);
+//        }
     }
 
     public void setnGramType(SimpleNGram.NGramType nGramType) {

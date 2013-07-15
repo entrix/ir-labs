@@ -65,13 +65,13 @@ public class SimpleGeneratorTest {
     public void fuzzyTest() {
         List<String> result;
         try {
-            for (int i = 0; i < 100; ++i) {
+            for (int i = 0; i < 1000; ++i) {
 //                if (random.nextBoolean()) {
 //                    System.out.print("generate sentence:");
 //                    result = generator.generateSentence();
 //                }
 //                else {
-                    System.out.print("generate phrase:");
+                    System.out.print("generate phrase: ");
                     result = generator.generatePhrase();
 //                }
 
