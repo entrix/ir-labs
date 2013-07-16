@@ -116,26 +116,26 @@ public class    LinguaUtil {
 
         for (int i = 0; i < ch.length; ++i) {
 
-//            if (!isCyrillic(ch[i]) ) {
-//                while (i < ch.length && ch[i] != '.' && ch[i] != '?' && ch[i] != '!' && ch[i] != ' ') {
-//                    i++;
-//                }
+            if (!isCyrillic(ch[i]) ) {
+                while (i < ch.length && ch[i] != '.' && ch[i] != '?' && ch[i] != '!' && ch[i] != ' ') {
+                    i++;
+                }
 
                 if (i == ch.length) {
                     return sentences;
                 }
-//            }
-
-            if (Character.isUpperCase(ch[i])) {
-                ch[i] = Character.toLowerCase(ch[i]);
             }
+
+//            if (Character.isUpperCase(ch[i])) {
+//                ch[i] = Character.toLowerCase(ch[i]);
+//            }
             if (ch[i] != '.' && ch[i] != '?' && ch[i] != '!') {
                 builder.append(ch[i]);
             }
-            else if (Character.isUpperCase(ch[i + 1]) || Character.isUpperCase(ch[i + 2]) ||
-                    Character.isUpperCase(ch[i + 3]) && random.nextBoolean()) {
-                builder.append(ch[i]);
-            }
+//            else if (Character.isUpperCase(ch[i + 1]) || Character.isUpperCase(ch[i + 2]) ||
+//                    Character.isUpperCase(ch[i + 3]) && random.nextBoolean()) {
+//                builder.append(ch[i]);
+//            }
             else {
                 if (statistic != null) {
                     statistic.setParameter("sentence.number", (int)statistic.getParameter("sentence.number") + 1);
@@ -177,6 +177,7 @@ public class    LinguaUtil {
 //        }
 
         return normalForm;
+
     }
 
     public static List<String> getRussianForm(String word) {

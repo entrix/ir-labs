@@ -228,9 +228,15 @@ public class LEXRetriever {
             }
         }
 
+
+        if (tokens == null || tokens.isEmpty()) {
+            return mwuList;
+        }
+
         for (List<String> seq : filterSeqs(tokens.get(0), upperSeqs)) {
             mwuList.add(new MWU(seq));
         }
+
 
         return mwuList;
     }
